@@ -827,7 +827,7 @@ function renderMap(){
  s+=lbl(268,470,'อ่าวไทย',0,13)+lbl(28,470,'ทะเลอันดามัน',-78,11)+lbl(36,250,'เมียนมา',-70,10)+lbl(265,70,'ลาว',0,10)+lbl(330,395,'กัมพูชา',0,10)+lbl(175,694,'มาเลเซีย',0,10);
  // compass
  s+=`<g transform="translate(352,520)" opacity=".85"><circle r="17" fill="#fffaf1" fill-opacity=".55" stroke="#2f6f8c" stroke-opacity=".5"/><path d="M0-15L4 0 0 15-4 0Z" fill="#2f6f8c" fill-opacity=".35"/><path d="M0-15L4 0H-4Z" fill="#c62828"/><text y="-20" text-anchor="middle" font-size="8" font-weight="700" fill="#2f6f8c" font-family="Prompt">N</text></g>`;
- const myCities=new Set();if(G&&G.players[ME]&&revealed())G.players[ME].tickets.forEach(id=>{const t=TICKETS[id];if(!connected(ME,t.a,t.b)){myCities.add(t.a);myCities.add(t.b)}});
+ const myCities=new Set();if(G&&G.players[ME]&&revealed()&&hintLv()!=='none')G.players[ME].tickets.forEach(id=>{const t=TICKETS[id];if(!connected(ME,t.a,t.b)){myCities.add(t.a);myCities.add(t.b)}});
  const fresh=G&&G.lastClaim!=null&&G.lastClaim!==shownClaim?G.lastClaim:null;if(fresh!==null)shownClaim=fresh;
  s+='<g filter="url(#carSh)">';
  ROUTES.forEach(r=>{
@@ -873,6 +873,7 @@ const RULES=`<ul class="rules">
 <li><span class="ic">🛤️</span><span><b>เส้นคู่ขนาน</b> ผู้เล่นคนเดียวยึดได้เพียงเส้นเดียว ถ้าเล่น 2–3 คน เมื่อมีคนยึดเส้นหนึ่งแล้ว อีกเส้นจะปิดใช้งาน</span></li>
 <li><span class="ic">⭐</span><span>แต้มเส้นทาง 1→1 · 2→2 · 3→4 · 4→7 · 5→10 · 6→15</span></li>
 <li><span class="ic">⭐</span><span>ตอนเริ่มเกมได้ตั๋ว 4 ใบ (<b>ตั๋วเส้นทางไกล</b> 1 ใบ + ตั๋วปกติ 3 ใบ) เก็บอย่างน้อย 2 ใบ ตั๋วที่ไปเมืองปลายทางที่เข้าถึงยากได้แต้มเพิ่ม</span></li>
+<li><span class="ic">🧭</span><span>ตัวช่วยในตั๋วมี 3 ระดับ: ไม่มีตัวช่วย / พื้นฐาน (ความคืบหน้า) / มือใหม่ (บอกเส้นทางและสีการ์ด) — เลือกก่อนเริ่มเกม ทุกคนใช้ระดับเดียวกัน</span></li>
 <li><span class="ic">🎲</span><span>คนเริ่มก่อน: สุ่มหรือเลือกเองก่อนเริ่มเกม ตอนเล่นอีกรอบเลือกได้ว่าจะสุ่ม ให้คนถัดไป หรือให้คนแต้มน้อยสุดเริ่ม</span></li>
 <li><span class="ic">⚖️</span><span>เพื่อความยุติธรรม ผู้เล่นที่ได้เล่นทีหลังได้การ์ดเริ่มต้นเพิ่ม 1 ใบ (คนสุดท้ายในเกม 4–5 คนได้เพิ่ม 2 ใบ)</span></li>
 <li><span class="ic">🎫</span><span><b>ตั๋ว</b> เชื่อมเมืองสองเมืองให้สำเร็จเพื่อรับแต้ม ถ้าไม่สำเร็จจะโดนหักแต้ม</span></li>
@@ -981,7 +982,7 @@ function afterRender(){
   if(a.type==='claim'){Sfx.claim(mine);if(!mine){pulseRid=a.rid;clearTimeout(pulseT);pulseT=setTimeout(()=>{pulseRid=null},1700);panTo(a.rid);renderMap()}}
  }
  // ticket completed?
- if(rv&&!G.players[ME].ai){const key=G.gid+':'+ME;const done=G.players[ME].tickets.filter(id=>connected(ME,TICKETS[id].a,TICKETS[id].b));
+ if(rv&&!G.players[ME].ai&&hintLv()!=='none'){const key=G.gid+':'+ME;const done=G.players[ME].tickets.filter(id=>connected(ME,TICKETS[id].a,TICKETS[id].b));
   if(doneKey.startsWith(key+'|')){const before=new Set(doneKey.split('|')[1].split(',').filter(Boolean).map(Number));
    done.filter(id=>!before.has(id)).forEach(id=>{const t=TICKETS[id];toast(`🎫 ตั๋ว ${C[t.a].name} → ${C[t.b].name} สำเร็จ! +${t.pts}`);Sfx.ticket();if(hlPath&&hlPath.t===id)clearPath()})}
   doneKey=key+'|'+done.join(',')}
@@ -995,7 +996,7 @@ function ticketPlan(pi,id){const p=G.players[pi],t=TICKETS[id];
  rids.forEach(x=>{const c=ROUTES[x].color;need[c]=(need[c]||0)+ROUTES[x].len});
  const built=r.rids.filter(x=>G.owner[x]===pi).reduce((a,x)=>a+ROUTES[x].len,0);
  return {rids,cost:r.cost,need,ok:r.cost<=p.trains,built,pct:Math.round(built/Math.max(1,built+r.cost)*100)}}
-function showPath(id){if(hlPath&&hlPath.t===id){clearPath();toast('ยกเลิกการแสดงเส้นทางแล้ว');return}const pl=ticketPlan(ME,id);const t=TICKETS[id];hideSheet();
+function showPath(id){if(hintLv()!=='full'){const t=TICKETS[id];return flashCities(t.a,t.b,true)}if(hlPath&&hlPath.t===id){clearPath();toast('ยกเลิกการแสดงเส้นทางแล้ว');return}const pl=ticketPlan(ME,id);const t=TICKETS[id];hideSheet();
  if(pl.blocked){toast('เส้นทางถูกตัดขาดแล้ว — ทำตั๋วใบนี้ไม่สำเร็จ');hl=[t.a,t.b];render();setTimeout(()=>{hl=null;render()},2600);return}
  hlPath={t:id,rids:new Set(pl.rids)};hl=[t.a,t.b];
  $('pathChip').style.display='flex';$('pathChip').innerHTML=`🧭 ${C[t.a].name} → ${C[t.b].name} · เหลือ ${pl.cost} ตู้ <button onclick="clearPath()">✕</button>`;render()}
@@ -1015,7 +1016,7 @@ function firstPicker(names,redraw){
 function startLocal(seats,first,how){
  clearTimeout(aiTimer);aiTimer=null;MODE='local';Net.close();
  if(first==null){first=resolveFirst(seats.length);how=firstMode==='random'?'random':'pick'}
- makeGame(seats,first,how);ME=humans()[0]??0;shownSeat=humans().length>1?-1:ME;
+ makeGame(seats,first,how);G.hints=hintPref;ME=humans()[0]??0;shownSeat=humans().length>1?-1:ME;
  resetTrackers();lastTurnSeen=-1;hideSheet();fitZoom();commit();
 }
 
@@ -1143,11 +1144,21 @@ function ticketChooser(off,min,initial){
  window.tkOk=()=>{hideSheet();act({t:'keepT',keep:off.filter(id=>sel.has(id))})};
  draw();
 }
+const HINTS={none:['🧠','ไม่มีตัวช่วย','แบบเกมกระดานจริง'],basic:['📊','พื้นฐาน','ความคืบหน้า+เตือน'],full:['🧭','มือใหม่','บอกเส้นทาง+สีการ์ด']};
+let hintPref='basic';
+function hintLv(){return (G&&G.hints)||'basic'}
+function hintPicker(redraw){return `<div class="lbl2">ตัวช่วยในตั๋ว</div><div class="seg">${Object.entries(HINTS).map(([k,[ic,l,d]])=>`<button class="${hintPref===k?'on':''}" onclick="hintPref='${k}';store.set('hints',hintPref);${redraw}">${ic} ${l}<small>${d}</small></button>`).join('')}</div>`}
+function flashCities(a,b,inSheet){if(inSheet)hideSheet();hl=[a,b];render();clearTimeout(flashCities.t);flashCities.t=setTimeout(()=>{hl=null;render()},2600)}
 function ticketsHTML(inSheet){
  const p=G.players[ME];
  const stuck=myTurn()&&G.drawn===0&&!cardsLeft(false)&&!G.tdeck.length,canDraw=myTurn()&&G.drawn===0&&G.tdeck.length>0;
  let h=`<button class="btn gold" style="width:100%;margin-bottom:10px" ${canDraw||stuck?'':'disabled'} onclick="${inSheet?'hideSheet();':''}uTickets()"><svg viewBox="0 0 24 24"><use href="#i-plus"/></svg>${stuck?'ข้ามตา (ไม่มีอะไรให้ทำแล้ว)':'จั่วตั๋วใหม่ (ใช้ตานี้)'}</button>`;
  if(!p.tickets.length)return h+'<p class="sub">ยังไม่มีตั๋ว</p>';
+ const HL=hintLv();
+ if(HL==='none'){
+  p.tickets.forEach(id=>{const t=TICKETS[id];h+=`<div class="tk${t.long?' long':''}" onclick="flashCities('${t.a}','${t.b}',${inSheet})">${tkHTML(t,{})}</div>`});
+  return h+'<p class="sub" style="margin-top:6px">โหมดไม่มีตัวช่วย: วางแผนเส้นทางเองจากแผนที่ แตะตั๋วเพื่อดูตำแหน่งเมือง</p>';
+ }
  const list=p.tickets.map(id=>TICKETS[id]).map(t=>{const d=connected(ME,t.a,t.b);return {t,d,pl:d?null:ticketPlan(ME,t.id)}})
   .sort((a,b)=>a.d-b.d||(!!(a.pl&&a.pl.blocked))-(!!(b.pl&&b.pl.blocked))||(b.pl&&!b.pl.blocked?b.pl.pct:0)-(a.pl&&!a.pl.blocked?a.pl.pct:0));
  const done=list.filter(x=>x.d).reduce((a,x)=>a+x.t.pts,0),todo=list.filter(x=>!x.d).reduce((a,x)=>a+x.t.pts,0);
@@ -1155,14 +1166,15 @@ function ticketsHTML(inSheet){
  list.forEach(({t,d,pl})=>{let st,pct=100,cls='done';
   if(d)st='<div class="state">✅ เชื่อมต่อสำเร็จ</div>';
   else if(pl.blocked){pct=0;cls='blk';st='<div class="state" style="color:#b71c1c">⛔ ถูกตัดขาด — ทำไม่สำเร็จแล้ว</div>'}
+  else if(HL==='basic'){pct=pl.pct;cls='go';st=`<div class="state" style="color:#8a6d1a">🛤️ คืบหน้า ${pl.pct}%</div>`}
   else{pct=pl.pct;cls=pl.ok?'go':'warn';const hand=p.hand;
    const chips=Object.entries(pl.need).map(([c,n])=>{const have=c==='gray'?Math.max(...COLS.map(x=>hand[x]))+hand.loco:hand[c]+hand.loco;
     return `<i class="${have>=n?'ok':''}" style="background:${CH[c]};color:${c==='white'||c==='yellow'||c==='gray'?'#222':'#fff'}">${c==='gray'?'เทา':CN[c]} ${n}</i>`}).join('');
    st=`<div class="state" style="color:${pl.ok?'#8a6d1a':'#b71c1c'}">🛤️ สร้างแล้ว ${pl.built} · เหลือ ${pl.cost} ตู้${pl.ok?'':' (รถไฟไม่พอ!)'}</div><div class="need">${chips}</div>`}
   st+=`<div class="prog ${cls}"><i style="width:${pct}%"></i><span>${pct}%</span></div>`;
-  const tap=d?`hl=['${t.a}','${t.b}'];${inSheet?'hideSheet();':''}render();setTimeout(()=>{hl=null;render()},2600)`:`showPath(${t.id})`;
+  const tap=d||HL!=='full'?`flashCities('${t.a}','${t.b}',${inSheet})`:`showPath(${t.id})`;
   h+=`<div class="tk ${d?'done':''}${t.long?' long':''}${hlPath&&hlPath.t===t.id?' sel':''}" onclick="${tap}">${tkHTML(t,{state:st})}</div>`});
- h+='<p class="sub" style="margin-top:6px">แตะตั๋วเพื่อดูเส้นทางแนะนำบนแผนที่ แตะซ้ำเพื่อยกเลิก · กรอบเขียวรอบสี = การ์ดในมือ (รวมหัวรถจักร) พอแล้ว</p>';
+ h+=HL==='basic'?'<p class="sub" style="margin-top:6px">โหมดตัวช่วยพื้นฐาน: แตะตั๋วเพื่อดูตำแหน่งเมือง — เส้นทางวางแผนเอง</p>':'<p class="sub" style="margin-top:6px">แตะตั๋วเพื่อดูเส้นทางแนะนำบนแผนที่ แตะซ้ำเพื่อยกเลิก · กรอบเขียวรอบสี = การ์ดในมือ (รวมหัวรถจักร) พอแล้ว</p>';
  return h;
 }
 function showMyTickets(){
@@ -1200,7 +1212,7 @@ function playAgain(how){
  if(how==='next')first=(G.first+1)%n;else if(how==='loser')first=G.result?G.result[G.result.length-1].i:0;else first=Math.floor(Math.random()*n);
  const h=how==='random'?'random':how;
  if(MODE==='host')return Net.restart(first,h);
- const seats=G.players.map(p=>({name:p.name,ai:p.ai,lvl:p.lvl}));startLocal(seats,first,h);
+ const seats=G.players.map(p=>({name:p.name,ai:p.ai,lvl:p.lvl}));hintPref=G.hints||hintPref;startLocal(seats,first,h);
 }
 
 // ---------- setup ----------
@@ -1217,11 +1229,13 @@ function showSetup(){
   body=`<div class="lbl2">ระดับความยากของบอท</div><div class="seg">${['easy','normal','hard'].map(k=>`<button class="${k===lvl?'on':''}" onclick="lvl='${k}';store.set('lvl',lvl);showSetup()">${LV[k]}<small>${k==='easy'?'เล่นสบาย ๆ':k==='normal'?'สมดุล':'วางแผน+ตัดหน้า'}</small></button>`).join('')}</div>
   <div class="lbl2">จำนวนบอทที่จะเล่นด้วย</div><div class="seg">${[1,2,3,4].map(n=>`<button class="${n===nb?'on':''}" onclick="nb=${n};showSetup()"><span style="font-size:22px">🤖</span>${n} บอท<small>${n+1} ผู้เล่น · ${TRAINS[n+1]} ตู้</small></button>`).join('')}</div>
   ${firstPicker(['คุณ',...Array.from({length:nb},(_,i)=>'บอท '+(i+1))],'showSetup()')}
+  ${hintPicker('showSetup()')}
   <button class="btn gold big" onclick="startLocal([{name:'คุณ',ai:false},...Array.from({length:nb},(_, i)=>({name:'บอท '+(i+1),ai:true,lvl}))])">🚂 เริ่มเกม</button>`;
  }else if(tab==='local'){
   body=`<p class="sub">ผลัดกันเล่นบนเครื่องนี้ เมื่อหมดตาจะมีหน้าจอให้ส่งเครื่องต่อ การ์ดของแต่ละคนจะไม่ให้คนอื่นเห็น</p><div class="seats">${seatsDraft.map((s,i)=>`<div class="seatrow"><span class="dot2" style="background:${PCOL[i]}"></span><input value="${esc(s.name)}" maxlength="12" oninput="seatsDraft[${i}].name=this.value" ${s.ai?'disabled':''}><button class="tg ${s.ai?'':'on'}" onclick="seatsDraft[${i}].ai=false;seatsDraft[${i}].name=seatsDraft[${i}].name.startsWith('บอท')?'ผู้เล่น ${i+1}':seatsDraft[${i}].name;showSetup()">😊 คน</button><button class="tg ${s.ai?'on':''}" ${i===0?'disabled':''} onclick="seatsDraft[${i}].ai=true;seatsDraft[${i}].name='บอท ${i}';showSetup()">🤖 บอท</button>${s.ai?`<button class="lv" onclick="seatsDraft[${i}].lvl=LVN[seatsDraft[${i}].lvl||'normal'];showSetup()">${LV[s.lvl||'normal']}</button>`:''}${i>=2?`<button class="x" onclick="seatsDraft.splice(${i},1);showSetup()">✕</button>`:'<span class="x"></span>'}</div>`).join('')}</div>
   ${seatsDraft.length<5?`<button class="btn ghost" style="width:100%;margin:6px 0 10px" onclick="seatsDraft.push({name:'ผู้เล่น '+(seatsDraft.length+1),ai:false});showSetup()">＋ เพิ่มผู้เล่น</button>`:''}
   ${firstPicker(seatsDraft.map((x,i)=>(x.name||'').trim()||'ผู้เล่น '+(i+1)),'showSetup()')}
+  ${hintPicker('showSetup()')}
   <button class="btn gold big" onclick="startPass()">🚂 เริ่มเกม</button>`;
  }else{
   const code=(location.hash.match(/^#join-([A-Z0-9]{5})$/)||[])[1]||'';
@@ -1330,20 +1344,21 @@ const Net={
   ${this.lobby.map((s,i)=>`<div class="seatrow"><span class="dot2" style="background:${PCOL[i]}"></span><span style="flex:1;font-weight:600">${esc(s.name)}</span>${s.kind==='bot'?`<button class="lv" onclick="Net.lobby[${i}].lvl=LVN[Net.lobby[${i}].lvl||'normal'];Net.sendLobby();Net.showLobby()">${LV[s.lvl||'normal']}</button>`:''}<span class="tag">${s.kind==='host'?'เจ้าของห้อง':s.kind==='bot'?'🤖 บอท':'😊 เพื่อน'}</span>${s.kind==='bot'?`<button class="x" onclick="Net.lobby.splice(${i},1);Net.sendLobby();Net.showLobby()">✕</button>`:''}</div>`).join('')}
   ${this.lobby.length<5?`<button class="btn ghost" style="width:100%;margin-top:6px" onclick="Net.lobby.push({name:'บอท '+(Net.lobby.filter(s=>s.kind==='bot').length+1),kind:'bot',lvl});Net.sendLobby();Net.showLobby()">＋ เพิ่มบอท</button>`:''}
   ${firstPicker(this.lobby.map(s=>s.name),'Net.showLobby()')}
+  ${hintPicker('Net.showLobby()')}
   <div class="lbl2" style="margin-top:14px">เวลาต่อตา</div><div class="seg">${[0,45,60,90].map(t=>`<button class="${this.timer===t?'on':''}" onclick="Net.timer=${t};Net.showLobby()">${t?t+' วิ':'ไม่จำกัด'}</button>`).join('')}</div>
   <button class="btn gold big" style="margin-top:4px" ${this.lobby.length<2?'disabled':''} onclick="Net.start()">🚂 เริ่มเกม (${this.lobby.length} คน)</button>
   <button class="btn ghost" style="width:100%;margin-top:8px" onclick="Net.close();MODE='local';tab='online';showSetup()">ปิดห้อง</button>`,true);
  },
  start(){
   if(this.lobby.length<2)return;
-  makeGame(this.lobby.map(s=>({name:s.name,ai:s.kind==='bot',lvl:s.lvl})),resolveFirst(this.lobby.length),firstMode==='random'?'random':'pick');G.timer=this.timer;
+  makeGame(this.lobby.map(s=>({name:s.name,ai:s.kind==='bot',lvl:s.lvl})),resolveFirst(this.lobby.length),firstMode==='random'?'random':'pick');G.timer=this.timer;G.hints=hintPref;
   this.lobby.forEach((s,i)=>{if(s.c){this.conns.set(s.c,i);try{s.c.send({t:'seat',seat:i})}catch(_){}}});
   ME=0;resetTrackers();lastTurnSeen=-1;hideSheet();fitZoom();commit();
  },
  restart(first,how){
   const seats=G.players.map((p,i)=>({name:p.name,ai:p.ai&&!p.off}));
   const connBySeat={};this.conns.forEach((s,c)=>{connBySeat[s]=c});
-  makeGame(seats.map((s,i)=>({name:s.name,ai:s.ai||(i>0&&!connBySeat[i]),lvl:G.players[i].lvl})),first,how);G.timer=this.timer;
+  const hz=G.hints;makeGame(seats.map((s,i)=>({name:s.name,ai:s.ai||(i>0&&!connBySeat[i]),lvl:G.players[i].lvl})),first,how);G.timer=this.timer;G.hints=hz;
   resetTrackers();lastTurnSeen=-1;hideSheet();commit();
  },
  broadcastState(){if(!G)return;const s={t:'state',G};this.conns.forEach((seat,c)=>{if(seat>=0)try{c.send(s)}catch(_){}})},
@@ -1380,7 +1395,7 @@ window.addEventListener('pagehide',()=>{if(MODE==='guest'&&Net.conn&&Net.ok)try{
 function copyTxt(t){try{navigator.clipboard.writeText(t).then(()=>toast('คัดลอกแล้ว'),()=>toast(t))}catch(_){toast(t)}}
 
 window.addEventListener('resize',()=>{if(userZoom)setView();else fitZoom();renderSide()});
-firstMode=store.get('firstMode','random');Sfx.on=store.get('sound',true);sndIcon();lvl=store.get('lvl','normal');
+firstMode=store.get('firstMode','random');hintPref=store.get('hints','basic');Sfx.on=store.get('sound',true);sndIcon();lvl=store.get('lvl','normal');
 fitZoom();render();
 if(/^#join-[A-Z0-9]{5}$/.test(location.hash))tab='online';
 showSetup();
