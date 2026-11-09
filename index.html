@@ -36,7 +36,7 @@ header{background:linear-gradient(180deg,#0b2230,#0f2c3d);color:#fff;padding:cal
 #mapBox{flex:1;position:relative;min-height:0}
 #mapWrap{position:absolute;inset:0 0 -14px 0;overflow:hidden;background:#7fbcd6;touch-action:none;cursor:grab}
 #mapWrap:active{cursor:grabbing}
-#map{display:block;width:100%;height:100%}
+#map{display:block;width:100%;height:100%;overflow:visible;transform-origin:0 0;will-change:transform}
 html,body{touch-action:pan-x pan-y}
 button,.card,.hc,.tk{touch-action:manipulation}
 #hint{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);background:#0b2230d0;color:#fff;font-size:11.5px;padding:6px 12px;border-radius:16px;z-index:2;pointer-events:none;transition:opacity .5s;white-space:nowrap}
@@ -475,7 +475,7 @@ const RDEF=[
 ['pls','loei','red',4],
 ['pbn','loei','yellow',3],
 ['pbn','nsw','white',3],
-['pbn','cyp','gray',3],
+['pbn','cyp','blue',3],
 ['pbn','lob','purple',4],
 ['loei','ud','gray',3],
 ['loei','kk','blue',4],
@@ -488,7 +488,7 @@ const RDEF=[
 ['skn','ud','black',3],
 ['skn','kk','purple',4],
 ['skn','roi','red',3],
-['mdh','roi','gray',3],
+['mdh','roi','yellow',3],
 ['mdh','ubn','gray',3],
 ['kk','roi','gray',2],
 ['kk','cyp','orange',2],
@@ -499,7 +499,7 @@ const RDEF=[
 ['ssk','sur','white',2],
 ['sur','bur','green',1],
 ['bur','krt','gray',2],
-['bur','cyp','gray',3],
+['bur','cyp','orange',3],
 ['cyp','krt','gray',2],
 ['kk','ud','green',2],
 ['kk','ud','red',2],
@@ -510,7 +510,7 @@ const RDEF=[
 ['lob','srb','black',1],
 ['lob','srb','red',1],
 ['lob','ayu','blue',1],
-['srb','ayu','gray',1],
+['srb','ayu','red',1],
 ['srb','krt','green',3],
 ['srb','krt','blue',3],
 ['ayu','bkk','black',1],
@@ -533,14 +533,14 @@ const RDEF=[
 ['chb','trt','blue',1],
 ['hh','pkk','purple',2],
 ['hh','pkk','yellow',2],
-['pkk','chp','gray',3],
+['pkk','chp','white',3],
 ['kan','pbi','blue',3],
 ['pbi','pkk','blue',2],
 ['rbr','pbi','gray',1],
-['hh','bsp','gray',3],
+['hh','bsp','green',3],
 ['pkk','bsp','gray',2],
-['bsp','chp','gray',2],
-['chp','rng','gray',2],
+['bsp','chp','red',2],
+['chp','rng','purple',2],
 ['chp','srt','orange',3],
 ['chp','srt','black',3],
 ['rng','kbi','orange',4],
@@ -551,7 +551,7 @@ const RDEF=[
 ['phk','kbi','blue',1],
 ['kbi','trg','black',2],
 ['trg','nst','purple',2],
-['trg','hy','gray',2],
+['trg','hy','black',2],
 ['nst','hy','blue',4],
 ['nst','hy','yellow',4],
 ['hy','nrt','green',3],
@@ -588,9 +588,9 @@ let rcolPref=false;
 function rcolPicker(redraw){return `<div class="lbl2">สีเส้นทาง</div><div class="seg"><button class="${!rcolPref?'on':''}" onclick="rcolPref=false;store.set('rcol',false);${redraw}">🗺️ แผนที่มาตรฐาน<small>สีเดิมทุกเกม</small></button><button class="${rcolPref?'on':''}" onclick="rcolPref=true;store.set('rcol',true);${redraw}">🎨 สุ่มสีทุกเกม<small>เส้นเดิม สีใหม่</small></button></div>`}
 // ---------- schematic layout: every car the same size (cities nudged from true geography) ----------
 const FERRY=new Set(['pty-srt']);const CAR=12.6;const BIG_CITIES=new Set(['bkk','cm','hy','kk','krt']);
-const LAYOUT={cr:[116.1,76.3],cm:[97.6,147.6],mhs:[24.9,149.6],nan:[216.2,115.5],lp:[151.3,164.9],tak:[117.0,223.8],skt:[163.3,245.9],pls:[202.7,241.0],loei:[268.3,193.0],ud:[329.6,205.0],nk:[339.3,174.4],npm:[437.7,203.4],kk:[324.0,267.5],ubn:[451.2,316.3],krt:[306.8,357.7],bur:[354.2,335.4],nsw:[169.6,308.1],lob:[216.7,351.6],ayu:[212.2,390.2],bkk:[206.7,432.0],kan:[126.5,378.3],pty:[252.8,490.3],chb:[317.0,476.0],hh:[165.6,465.5],chp:[142.2,573.9],srt:[168.9,663.8],phk:[69.3,715.2],kbi:[127.1,716.1],nst:[177.8,721.8],hy:[175.8,814.9],nrt:[259.3,815.8],phy:[155.8,112.0],phr:[203.3,162.1],utt:[173.3,187.8],pbn:[241.8,271.8],msot:[98.8,262.1],bkn:[383.7,153.5],skn:[395.5,219.3],mdh:[437.5,253.7],roi:[376.1,285.0],sur:[381.0,352.7],spb:[173.4,379.8],srb:[250.1,389.0],rbr:[144.3,413.0],ryg:[276.1,446.1],trt:[320.3,505.5],pkk:[119.3,496.0],rng:[88.4,616.5],trg:[132.9,767.0],cyp:[290.8,311.5],ssk:[423.6,331.7],pbi:[114.0,448.2],bsp:[166.0,534.0]};
+const LAYOUT={cr:[116.1,76.3],cm:[97.6,147.6],mhs:[24.9,149.6],nan:[216.2,115.5],lp:[151.3,164.9],tak:[119.9,231.6],skt:[167.2,243.0],pls:[204.0,241.4],loei:[268.3,193.0],ud:[329.6,205.0],nk:[339.3,174.4],npm:[437.7,203.4],kk:[324.0,267.5],ubn:[451.2,316.3],krt:[306.8,357.7],bur:[354.2,335.4],nsw:[168.6,305.9],lob:[216.7,351.6],ayu:[212.2,390.2],bkk:[206.7,432.0],kan:[126.5,378.3],pty:[252.8,490.3],chb:[317.0,476.0],hh:[165.6,465.5],chp:[142.2,573.9],srt:[168.9,663.8],phk:[69.3,715.2],kbi:[127.1,716.1],nst:[177.8,721.8],hy:[175.8,814.9],nrt:[259.3,815.8],phy:[155.8,112.0],phr:[203.3,162.1],utt:[161.1,191.7],pbn:[242.4,276.3],msot:[98.8,262.1],bkn:[383.7,153.5],skn:[395.5,219.3],mdh:[437.5,253.7],roi:[376.1,285.0],sur:[381.0,352.7],spb:[173.4,379.8],srb:[250.1,389.0],rbr:[144.3,413.0],ryg:[276.1,446.1],trt:[320.3,505.5],pkk:[119.3,496.0],rng:[88.4,616.5],trg:[132.9,767.0],cyp:[290.8,311.5],ssk:[423.6,331.7],pbi:[114.0,448.2],bsp:[166.0,534.0]};
 for(const k in LAYOUT){C[k].x=LAYOUT[k][0];C[k].y=LAYOUT[k][1]}
-const OUTLINE_XY=[[141.5, 68.7], [146.8, 69.7], [152.1, 70.7], [157.3, 71.9], [162.4, 73.2], [167.5, 74.7], [172.4, 76.3], [177.3, 78.1], [182.1, 80], [186.8, 82.1], [191.4, 84.3], [195.8, 86.7], [200.2, 89.2], [204.5, 91.8], [208.7, 94.5], [212.8, 97.4], [216.8, 100.3], [220.8, 103.2], [224.7, 106.2], [228.5, 109.3], [232.3, 112.3], [236.1, 115.3], [239.8, 118.3], [243.6, 121.2], [247.4, 124], [251.2, 126.7], [255, 129.3], [258.9, 131.8], [262.8, 134.1], [266.9, 136.3], [271, 138.3], [275.2, 140.1], [279.5, 141.8], [284, 143.2], [288.5, 144.5], [293.2, 145.5], [298, 146.4], [302.9, 147], [307.9, 147.5], [313.1, 147.8], [318.3, 147.9], [323.7, 147.9], [329.2, 147.7], [334.8, 147.4], [340.4, 146.9], [346.2, 146.3], [352, 145.7], [357.8, 145], [363.7, 144.4], [369.5, 143.9], [375.3, 143.8], [380.8, 144.3], [386.1, 145.5], [391, 147.4], [395.8, 150.1], [400.3, 153.3], [404.7, 156.8], [409, 160.6], [413.3, 164.4], [417.6, 168.3], [421.9, 172.3], [426.1, 176.3], [430.4, 180.3], [434.4, 184.4], [438.3, 188.7], [441.8, 193.2], [444.8, 197.9], [447.3, 202.9], [449.4, 208.1], [451.2, 213.5], [452.7, 219.1], [454, 224.7], [455.3, 230.4], [456.6, 236.1], [457.8, 241.8], [459, 247.4], [460.2, 253.1], [461.3, 258.7], [462.4, 264.3], [463.4, 269.8], [464.4, 275.2], [465.2, 280.6], [466, 285.9], [466.6, 291.1], [467, 296.3], [467.3, 301.3], [467.4, 306.2], [467.3, 310.9], [467.1, 315.6], [466.6, 320.1], [465.8, 324.4], [464.9, 328.7], [463.6, 332.7], [462.2, 336.6], [460.4, 340.4], [458.5, 343.9], [456.2, 347.4], [453.8, 350.7], [451, 353.8], [448.1, 356.9], [444.9, 359.8], [441.6, 362.5], [438, 365.2], [434.3, 367.8], [430.4, 370.4], [426.4, 372.9], [422.3, 375.3], [418.2, 377.8], [413.9, 380.2], [409.6, 382.7], [405.4, 385.1], [401.1, 387.7], [396.9, 390.3], [392.7, 393], [388.6, 395.7], [384.6, 398.6], [380.7, 401.6], [377, 404.7], [373.4, 408], [369.9, 411.3], [366.7, 414.8], [363.6, 418.4], [360.6, 422.2], [357.9, 426], [355.3, 430], [352.9, 434.1], [350.6, 438.2], [348.6, 442.5], [346.6, 446.9], [344.9, 451.3], [343.2, 455.9], [341.7, 460.4], [340.3, 465.1], [339, 469.8], [337.8, 474.5], [336.7, 479.4], [335.6, 484.2], [334.6, 489.1], [333.5, 493.9], [332.3, 498.6], [330.9, 503.1], [329.1, 507], [326.9, 510.1], [324.1, 512.4], [320.8, 513.7], [317.1, 514.3], [313, 514.1], [308.7, 513.6], [304.3, 512.8], [299.7, 512], [295.1, 511], [290.3, 510.1], [285.6, 509.1], [280.8, 508.2], [276, 507.2], [271.2, 506.1], [266.4, 505], [261.7, 503.7], [257.1, 502.3], [252.7, 500.6], [248.5, 498.7], [244.5, 496.6], [240.6, 494.3], [236.8, 492.1], [233.2, 489.8], [229.7, 487.7], [226.2, 485.8], [222.9, 484.1], [219.6, 482.6], [216.4, 481.5], [213.3, 480.6], [210.3, 480], [207.5, 479.7], [204.7, 479.7], [202.1, 480.1], [199.6, 480.7], [197.2, 481.7], [195, 483], [192.9, 484.6], [190.9, 486.5], [189.1, 488.6], [187.5, 491], [186, 493.6], [184.6, 496.5], [183.4, 499.5], [182.3, 502.6], [181.3, 505.9], [180.4, 509.4], [179.7, 513], [179, 516.6], [178.3, 520.4], [177.7, 524.3], [177.1, 528.2], [176.4, 532.2], [175.7, 536.2], [174.9, 540.4], [174.1, 544.5], [173.4, 548.8], [172.6, 553.1], [171.9, 557.5], [171.2, 561.9], [170.6, 566.5], [170.1, 571.1], [169.7, 575.7], [169.4, 580.5], [169.3, 585.2], [169.3, 590.1], [169.4, 594.9], [169.7, 599.8], [170.2, 604.7], [170.8, 609.7], [171.5, 614.6], [172.3, 619.5], [173.3, 624.4], [174.4, 629.3], [175.6, 634.1], [176.9, 639], [178.3, 643.7], [179.8, 648.5], [181.3, 653.2], [182.9, 657.8], [184.6, 662.4], [186.4, 667], [188.1, 671.5], [190, 676], [191.8, 680.4], [193.8, 684.8], [195.7, 689.2], [197.7, 693.6], [199.7, 697.9], [201.7, 702.2], [203.8, 706.6], [205.9, 710.8], [208.1, 715.1], [210.3, 719.4], [212.5, 723.7], [214.7, 727.9], [217, 732.1], [219.3, 736.4], [221.7, 740.6], [224.1, 744.8], [226.5, 748.9], [229, 753.1], [231.5, 757.2], [234.2, 761.4], [236.8, 765.5], [239.5, 769.6], [242.3, 773.7], [245.2, 777.8], [248.1, 782], [251.1, 786.1], [254.1, 790.2], [257.1, 794.4], [260, 798.5], [262.7, 802.7], [264.9, 806.8], [266.5, 810.9], [267.1, 814.7], [266.7, 818.2], [265.2, 821.2], [262.8, 823.7], [259.6, 825.7], [255.9, 827.4], [252, 828.7], [247.8, 829.9], [243.5, 830.9], [239.3, 831.8], [234.9, 832.6], [230.6, 833.2], [226.2, 833.6], [221.8, 833.9], [217.4, 834], [212.9, 833.9], [208.5, 833.6], [203.9, 833.1], [199.4, 832.5], [194.8, 831.6], [190.3, 830.6], [185.7, 829.4], [181.2, 827.9], [176.9, 826], [172.7, 823.8], [168.7, 821.1], [164.8, 818.1], [161.1, 814.8], [157.4, 811.3], [153.8, 807.6], [150.2, 803.9], [146.5, 800.1], [142.9, 796.4], [139.2, 792.6], [135.4, 788.7], [131.6, 784.9], [127.8, 781.1], [123.9, 777.3], [119.9, 773.5], [115.9, 769.7], [111.8, 765.9], [107.7, 762.1], [103.4, 758.4], [99.1, 754.7], [94.6, 750.9], [90.1, 747.3], [85.5, 743.6], [80.8, 739.9], [76.3, 736.1], [71.9, 732.3], [67.9, 728.3], [64.7, 724.1], [62.3, 719.6], [60.9, 714.8], [60.4, 709.8], [60.7, 704.5], [61.4, 699.1], [62.4, 693.5], [63.5, 687.9], [64.6, 682.3], [65.8, 676.7], [66.9, 671.1], [68, 665.5], [69.1, 660], [70.3, 654.5], [71.4, 649], [72.4, 643.6], [73.5, 638.3], [74.6, 633.1], [75.7, 627.9], [76.8, 622.9], [77.9, 617.9], [79.1, 613], [80.3, 608.2], [81.5, 603.5], [82.7, 598.9], [83.9, 594.3], [85, 589.8], [86.1, 585.3], [87.2, 580.8], [88.2, 576.4], [89.2, 571.9], [90.2, 567.5], [91.1, 563.1], [92, 558.7], [92.8, 554.2], [93.5, 549.8], [94.3, 545.3], [95, 540.8], [95.6, 536.3], [96.2, 531.7], [96.7, 527.2], [97.2, 522.6], [97.6, 518], [97.9, 513.4], [98.2, 508.8], [98.5, 504.1], [98.7, 499.4], [98.8, 494.7], [98.8, 489.9], [98.8, 485.2], [98.7, 480.3], [98.5, 475.5], [98.2, 470.6], [97.9, 465.6], [97.5, 460.6], [97.1, 455.6], [96.6, 450.4], [96, 445.3], [95.4, 440], [94.7, 434.8], [94, 429.4], [93.3, 424], [92.6, 418.6], [91.8, 413.1], [91, 407.6], [90.3, 402], [89.5, 396.4], [88.7, 390.7], [88, 385.1], [87.3, 379.4], [86.5, 373.7], [85.9, 368], [85.2, 362.3], [84.5, 356.5], [83.9, 350.8], [83.2, 345.1], [82.5, 339.4], [81.9, 333.7], [81.2, 328], [80.4, 322.4], [79.6, 316.8], [78.8, 311.1], [77.9, 305.6], [76.9, 300], [75.9, 294.5], [74.7, 288.9], [73.4, 283.5], [72.1, 278], [70.6, 272.6], [69, 267.2], [67.3, 261.8], [65.5, 256.4], [63.5, 251.1], [61.5, 245.8], [59.3, 240.5], [57, 235.2], [54.7, 230], [52.2, 224.7], [49.6, 219.5], [47, 214.3], [44.3, 209], [41.5, 203.8], [38.7, 198.6], [35.8, 193.4], [32.9, 188.1], [29.9, 182.9], [26.9, 177.6], [24, 172.3], [21.4, 167.1], [19.1, 161.9], [17.6, 156.8], [17, 152], [17.4, 147.4], [19, 143], [21.6, 138.9], [24.8, 135], [28.5, 131.2], [32.4, 127.4], [36.5, 123.7], [40.7, 120], [44.9, 116.2], [49.2, 112.5], [53.5, 108.9], [57.9, 105.2], [62.3, 101.5], [66.8, 97.9], [71.3, 94.2], [75.8, 90.6], [80.5, 87], [85.1, 83.5], [89.8, 80], [94.6, 76.7], [99.4, 73.7], [104.4, 71.1], [109.4, 69.1], [114.6, 67.8], [119.9, 67.1], [125.3, 67], [130.7, 67.3], [136.1, 67.9]];
+const OUTLINE_XY=[[138.9, 71.8], [143.8, 73.4], [148.6, 75.1], [153.5, 76.9], [158.3, 78.7], [163.1, 80.5], [167.9, 82.3], [172.6, 84.2], [177.3, 86.1], [182, 88.1], [186.6, 90], [191.2, 92], [195.8, 94.1], [200.3, 96.1], [204.8, 98.2], [209.3, 100.2], [213.7, 102.3], [218.1, 104.4], [222.6, 106.5], [227, 108.6], [231.3, 110.7], [235.7, 112.7], [240.1, 114.7], [244.5, 116.6], [248.9, 118.6], [253.4, 120.4], [257.8, 122.2], [262.3, 124], [266.8, 125.6], [271.3, 127.2], [275.9, 128.7], [280.5, 130.1], [285.2, 131.5], [289.9, 132.7], [294.7, 133.8], [299.6, 134.9], [304.5, 135.8], [309.4, 136.6], [314.4, 137.4], [319.5, 138], [324.6, 138.6], [329.8, 139.1], [335.1, 139.4], [340.4, 139.7], [345.8, 140], [351.3, 140.2], [356.8, 140.3], [362.3, 140.5], [367.8, 140.8], [373.2, 141.3], [378.4, 142.3], [383.4, 143.8], [388.2, 145.9], [392.8, 148.6], [397.2, 151.7], [401.5, 155.1], [405.7, 158.7], [410, 162.4], [414.2, 166.2], [418.4, 170], [422.6, 173.8], [426.9, 177.6], [431, 181.5], [435, 185.4], [438.7, 189.5], [442.1, 193.8], [444.9, 198.3], [447.2, 203.1], [449, 208], [450.4, 213.2], [451.5, 218.4], [452.4, 223.7], [453.3, 229.1], [454.1, 234.4], [454.8, 239.7], [455.6, 244.9], [456.3, 250.2], [457, 255.4], [457.6, 260.5], [458.2, 265.7], [458.8, 270.8], [459.3, 275.8], [459.8, 280.9], [460.3, 285.8], [460.7, 290.8], [461.1, 295.7], [461.3, 300.5], [461.4, 305.2], [461.3, 309.9], [460.8, 314.4], [459.8, 318.6], [458.4, 322.7], [456.5, 326.6], [454.3, 330.3], [451.8, 333.9], [449.2, 337.5], [446.5, 340.9], [443.8, 344.4], [441.1, 347.8], [438.3, 351.2], [435.5, 354.6], [432.6, 357.9], [429.7, 361.2], [426.8, 364.5], [423.8, 367.8], [420.8, 371], [417.7, 374.3], [414.6, 377.5], [411.5, 380.7], [408.4, 384], [405.3, 387.2], [402.1, 390.5], [399, 393.8], [395.9, 397.1], [392.7, 400.4], [389.7, 403.8], [386.6, 407.2], [383.6, 410.7], [380.7, 414.2], [377.8, 417.8], [374.9, 421.5], [372.2, 425.2], [369.5, 428.9], [366.8, 432.7], [364.2, 436.6], [361.7, 440.6], [359.3, 444.6], [357, 448.7], [354.7, 452.9], [352.5, 457.1], [350.3, 461.4], [348.2, 465.8], [346.2, 470.2], [344.2, 474.6], [342.3, 479.2], [340.4, 483.8], [338.5, 488.4], [336.6, 493], [334.8, 497.5], [332.8, 501.9], [330.6, 505.9], [328.2, 509.2], [325.4, 511.8], [322.3, 513.4], [318.8, 514.2], [314.9, 514.2], [310.9, 513.8], [306.8, 513.1], [302.7, 512.3], [298.5, 511.3], [294.3, 510.4], [290.1, 509.4], [286, 508.5], [281.9, 507.5], [277.8, 506.6], [273.8, 505.6], [269.8, 504.7], [265.8, 503.8], [261.9, 502.9], [258.1, 502], [254.3, 501.1], [250.6, 500.3], [247, 499.5], [243.5, 498.8], [240, 498.1], [236.7, 497.6], [233.4, 497.1], [230.2, 496.7], [227.1, 496.4], [224.1, 496.2], [221.2, 496.2], [218.4, 496.3], [215.7, 496.6], [213.1, 497], [210.6, 497.6], [208.1, 498.3], [205.8, 499.2], [203.6, 500.3], [201.5, 501.5], [199.5, 502.9], [197.5, 504.5], [195.7, 506.3], [194, 508.2], [192.3, 510.3], [190.7, 512.6], [189.3, 515], [187.9, 517.6], [186.6, 520.3], [185.3, 523.2], [184.2, 526.2], [183.1, 529.3], [182.2, 532.6], [181.3, 536], [180.4, 539.5], [179.7, 543.1], [179, 546.8], [178.4, 550.6], [177.9, 554.5], [177.5, 558.4], [177.1, 562.5], [176.9, 566.6], [176.7, 570.8], [176.5, 575], [176.5, 579.3], [176.5, 583.6], [176.7, 588], [176.9, 592.4], [177.2, 596.9], [177.5, 601.4], [178, 605.9], [178.5, 610.4], [179.1, 614.9], [179.9, 619.5], [180.6, 624.1], [181.5, 628.6], [182.4, 633.2], [183.5, 637.8], [184.6, 642.3], [185.8, 646.9], [187, 651.5], [188.3, 656], [189.7, 660.6], [191.2, 665.1], [192.7, 669.6], [194.3, 674.1], [196, 678.6], [197.7, 683.1], [199.5, 687.5], [201.3, 692], [203.2, 696.4], [205.2, 700.8], [207.2, 705.2], [209.3, 709.5], [211.4, 713.9], [213.5, 718.3], [215.7, 722.6], [218, 726.9], [220.3, 731.2], [222.7, 735.5], [225.1, 739.8], [227.5, 744.1], [230, 748.4], [232.5, 752.7], [235.1, 756.9], [237.7, 761.2], [240.3, 765.5], [243, 769.8], [245.7, 774.1], [248.5, 778.4], [251.3, 782.7], [254.1, 787], [256.9, 791.3], [259.6, 795.7], [262.2, 800], [264.5, 804.4], [266.2, 808.6], [267.1, 812.7], [267.1, 816.4], [266, 819.6], [264.1, 822.2], [261.3, 824.1], [257.9, 825.4], [254, 826.1], [249.9, 826.6], [245.7, 826.9], [241.3, 827.1], [236.9, 827.2], [232.5, 827.3], [228, 827.4], [223.5, 827.5], [219, 827.5], [214.4, 827.5], [209.8, 827.5], [205.1, 827.5], [200.4, 827.4], [195.7, 827.2], [190.9, 827], [186.2, 826.6], [181.6, 825.9], [177.1, 824.8], [172.8, 823.3], [168.7, 821.2], [164.9, 818.6], [161.2, 815.6], [157.5, 812.4], [153.9, 809], [150.3, 805.5], [146.7, 802], [143, 798.4], [139.2, 794.8], [135.4, 791.2], [131.6, 787.6], [127.7, 783.9], [123.8, 780.2], [119.8, 776.6], [115.8, 772.8], [111.7, 769.1], [107.6, 765.4], [103.5, 761.6], [99.3, 757.8], [95.1, 754], [90.8, 750.2], [86.5, 746.4], [82.2, 742.6], [77.9, 738.7], [73.8, 734.8], [69.9, 730.8], [66.4, 726.7], [63.6, 722.4], [61.6, 717.9], [60.4, 713.2], [60.1, 708.4], [60.4, 703.3], [61.1, 698.2], [62.1, 693], [63.1, 687.9], [64.2, 682.7], [65.3, 677.5], [66.4, 672.3], [67.5, 667.1], [68.6, 662], [69.7, 656.8], [70.8, 651.7], [71.8, 646.6], [72.9, 641.5], [74, 636.5], [75, 631.4], [76.1, 626.4], [77.1, 621.5], [78.1, 616.5], [79.1, 611.6], [80.1, 606.7], [81.1, 601.8], [82, 597], [83, 592.2], [83.9, 587.3], [84.8, 582.6], [85.6, 577.8], [86.4, 573.1], [87.2, 568.3], [88, 563.6], [88.7, 558.9], [89.4, 554.2], [90.1, 549.5], [90.7, 544.8], [91.3, 540.1], [91.8, 535.3], [92.3, 530.6], [92.7, 525.9], [93.1, 521.1], [93.4, 516.4], [93.7, 511.6], [94, 506.8], [94.2, 502], [94.3, 497.2], [94.4, 492.3], [94.5, 487.4], [94.5, 482.5], [94.4, 477.6], [94.4, 472.6], [94.2, 467.6], [94, 462.6], [93.8, 457.5], [93.6, 452.4], [93.3, 447.3], [92.9, 442.2], [92.6, 437], [92.1, 431.8], [91.7, 426.5], [91.2, 421.2], [90.7, 415.9], [90.1, 410.6], [89.5, 405.3], [88.9, 399.9], [88.3, 394.5], [87.6, 389.1], [86.9, 383.7], [86.2, 378.2], [85.4, 372.7], [84.6, 367.3], [83.7, 361.8], [82.9, 356.3], [82, 350.8], [81, 345.3], [80, 339.7], [79, 334.2], [77.9, 328.7], [76.8, 323.2], [75.6, 317.7], [74.4, 312.2], [73.1, 306.7], [71.8, 301.2], [70.4, 295.7], [68.9, 290.2], [67.4, 284.7], [65.9, 279.3], [64.2, 273.8], [62.5, 268.4], [60.7, 262.9], [58.9, 257.5], [57, 252.1], [55, 246.7], [53, 241.2], [50.9, 235.8], [48.7, 230.4], [46.5, 225], [44.2, 219.6], [41.8, 214.1], [39.4, 208.7], [37, 203.2], [34.4, 197.8], [31.9, 192.3], [29.3, 186.8], [26.6, 181.3], [24, 175.8], [21.5, 170.4], [19.3, 165], [17.6, 159.7], [16.7, 154.7], [16.8, 150], [18, 145.6], [20.3, 141.5], [23.3, 137.7], [26.9, 134], [30.9, 130.4], [35, 126.9], [39.2, 123.3], [43.4, 119.8], [47.6, 116.2], [51.9, 112.7], [56.2, 109.1], [60.5, 105.6], [64.9, 102], [69.3, 98.4], [73.7, 94.9], [78.1, 91.3], [82.5, 87.7], [87, 84.2], [91.5, 80.7], [96, 77.3], [100.5, 74.2], [105.1, 71.5], [109.8, 69.4], [114.5, 68.1], [119.3, 67.7], [124.2, 68], [129.1, 68.9], [134, 70.2]];
 (function(){ // where each track starts/ends so tracks leaving a city never overlap
  const wid=r=>r.pair!==null?13.8:6.8;
  const dirs={};ROUTES.forEach(r=>{[[r.a,r.b],[r.b,r.a]].forEach(([c,o])=>{(dirs[c]=dirs[c]||[]).push({r,ang:Math.atan2(C[o].y-C[c].y,C[o].x-C[c].x)})})});
@@ -933,7 +933,12 @@ function maxS(){return box().w/W*4}
 function clampView(){const b=box();V.w=b.w/S;V.h=(b.h+14)/S;const vis=b.h/S;
  const cl=(v,span,full)=>span>=full?(full-span)/2:Math.max(-15,Math.min(full-span+15,v));
  V.x=cl(V.x,V.w,W);V.y=cl(V.y,vis,H)}
-function setView(){if(!box().w)return;clampView();$('map').setAttribute('viewBox',`${V.x.toFixed(2)} ${V.y.toFixed(2)} ${V.w.toFixed(2)} ${V.h.toFixed(2)}`)}
+// During a gesture the map is moved with a CSS transform (GPU, no repaint); the real viewBox is set once when the fingers lift.
+let CV=null,camRaf=0;
+function setView(live){if(!box().w)return;clampView();const sv=$('map');
+ if(live&&CV){if(!camRaf)camRaf=requestAnimationFrame(()=>{camRaf=0;if(!CV)return;const k=S/CV.S;sv.style.transform=`translate(${((CV.x-V.x)*S).toFixed(2)}px,${((CV.y-V.y)*S).toFixed(2)}px) scale(${k.toFixed(4)})`});return}
+ if(camRaf){cancelAnimationFrame(camRaf);camRaf=0}
+ sv.setAttribute('viewBox',`${V.x.toFixed(2)} ${V.y.toFixed(2)} ${V.w.toFixed(2)} ${V.h.toFixed(2)}`);sv.style.transform='';CV={x:V.x,y:V.y,S}}
 function zoomAt(ns,px,py){userZoom=true;ns=Math.max(minS(),Math.min(maxS(),ns));const ux=V.x+px/S,uy=V.y+py/S;S=ns;V.x=ux-px/S;V.y=uy-py/S;setView()}
 function fitZoom(){userZoom=false;const b=box();if(!b.w)return;const all=Math.min(b.w/W,b.h/H);S=(b.w/b.h>=W/H||all>=b.w/W*.8)?all:b.w/W;V.x=0;V.y=0;setView()}
 function fitAll(){userZoom=false;const b=box();S=Math.min(b.w/W,b.h/H);V.x=0;V.y=0;setView()}
@@ -953,14 +958,14 @@ function applyZoom(){setView()}
   if(pts.size===1){moved=false;pinch=null;beginPan()}else if(pts.size>=2){moved=true;beginPinch();hideHint()}}
  function move(id,x,y){if(!pts.has(id))return;pts.set(id,loc(x,y));
   if(pts.size>=2&&pinch){const [a,b]=[...pts.values()];const d=Math.hypot(a.x-b.x,a.y-b.y);const mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
-   userZoom=true;S=Math.max(minS(),Math.min(maxS(),pinch.s*d/pinch.d));V.x=pinch.ux-mx/S;V.y=pinch.uy-my/S;setView()}
+   userZoom=true;S=Math.max(minS(),Math.min(maxS(),pinch.s*d/pinch.d));V.x=pinch.ux-mx/S;V.y=pinch.uy-my/S;setView(true)}
   else if(pts.size===1&&start){const p=[...pts.values()][0];const dx=p.x-start.x,dy=p.y-start.y;
    if(!moved&&Math.hypot(dx,dy)>8){moved=true;hideHint()}
-   if(moved){userZoom=true;V.x=start.vx-dx/S;V.y=start.vy-dy/S;setView()}}}
+   if(moved){userZoom=true;V.x=start.vx-dx/S;V.y=start.vy-dy/S;setView(true)}}}
  function up(id,cx,cy,cancel){if(!pts.has(id))return;const p=pts.get(id);pts.delete(id);
   if(pts.size>=2){beginPinch();return}
   if(pts.size===1){pinch=null;beginPan();return}
-  start=null;pinch=null;gestureOn=false;if(mapDirty)setTimeout(renderMap,0);
+  start=null;pinch=null;gestureOn=false;setView();if(mapDirty)setTimeout(renderMap,0);
   if(moved||cancel)return;
   const el=document.elementFromPoint(cx,cy);const g=el&&el.closest&&el.closest('[data-rid]');
   if(g&&G){routeTap(+g.dataset.rid);lastTap.t=0;return}
@@ -984,7 +989,7 @@ function applyZoom(){setView()}
  ['gesturestart','gesturechange','gestureend'].forEach(t=>document.addEventListener(t,e=>e.preventDefault(),opt));
  document.addEventListener('touchmove',e=>{if(e.touches.length>1)e.preventDefault()},opt);
  // safety net: if the last finger lifts anywhere, the map gesture is over
- ['touchend','touchcancel'].forEach(t=>document.addEventListener(t,e=>{if(e.touches.length===0&&gestureOn){pts.clear();start=null;pinch=null;gestureOn=false;if(mapDirty)renderMap()}},false));
+ ['touchend','touchcancel'].forEach(t=>document.addEventListener(t,e=>{if(e.touches.length===0&&gestureOn){pts.clear();start=null;pinch=null;gestureOn=false;setView();if(mapDirty)renderMap()}},false));
  window.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault()},opt);
  setTimeout(hideHint,7000);
  try{new ResizeObserver(()=>{if(userZoom)setView();else fitZoom()}).observe(mw)}catch(_){}
@@ -1000,6 +1005,8 @@ function carRects(){ // exact car footprints (same maths as the renderer), as 4-
    out.push([[cx-ux*w+uy*h,cy-uy*w-ux*h],[cx+ux*w+uy*h,cy+uy*w-ux*h],[cx+ux*w-uy*h,cy+uy*w+ux*h],[cx-ux*w-uy*h,cy-uy*w+ux*h]])}});
  return out}
 const SHORT={spb:'สุพรรณฯ'};
+// long names that may wrap onto two lines where the map is dense
+const SPLIT={nsw:['นคร','สวรรค์'],pbn:['เพชร','บูรณ์'],utt:['อุตร','ดิตถ์'],pls:['พิษณุ','โลก'],kan:['กาญจน','บุรี'],mhs:['แม่ฮ่อง','สอน']};
 function labelPos(){
  if(LBL)return LBL;LBL={};
  const cv=document.createElement('canvas').getContext('2d');
@@ -1012,29 +1019,31 @@ function labelPos(){
  const keys=Object.keys(C);
  const deg=k=>ROUTES.filter(r=>r.a===k||r.b===k).length;
  keys.sort((a,b)=>deg(b)-deg(a)||BIG.has(b)-BIG.has(a));
- const info={};keys.forEach(k=>{const c=C[k],big=BIG.has(k),fs=big?11.5:10.5;cv.font=`${big?700:600} ${fs}px Prompt, sans-serif`;info[k]={w:cv.measureText(c.name).width,ws:SHORT[k]?cv.measureText(SHORT[k]).width:0,fs,rc:big?6:4.8}});
+ const info={};keys.forEach(k=>{const c=C[k],big=BIG.has(k),fs=big?11.5:10.5;cv.font=`${big?700:600} ${fs}px Prompt, sans-serif`;info[k]={w:cv.measureText(c.name).width,ws:SHORT[k]?cv.measureText(SHORT[k]).width:0,w2:SPLIT[k]?Math.max(...SPLIT[k].map(t=>cv.measureText(t).width)):0,fs,rc:big?6:4.8}});
  // candidates with their fixed cost (cars, stations, distance, ambiguity, leader crossings) computed once
  const CA={};
  for(const k of keys){const c=C[k],{fs:fs0,rc}=info[k];const out=[];
-  for(const [sc0,sh] of [[1,0],[1,1],[.86,0],[.86,1]]){if(sh&&!SHORT[k])continue;const w0=sh?info[k].ws:info[k].w;for(const rad of [rc+2.5,rc+6,rc+10,rc+15,rc+21,rc+28,rc+36,rc+46,rc+58,rc+70,rc+84])for(let i=0;i<24;i++){const th=i*Math.PI/12;const ux=Math.cos(th),uy=Math.sin(th);const w=w0*sc0,fs=fs0*sc0;
-   const hw=w/2+1,hh=fs*.68;const cx=c.x+ux*(rad+Math.abs(ux)*hw),cy=c.y+uy*(rad+Math.abs(uy)*hh);
+  for(const [sc0,sh] of [[1,0],[1,1],[1,2],[.86,0],[.86,1],[.86,2]]){if(sh===1&&!SHORT[k]||sh===2&&!SPLIT[k])continue;const w0=sh===2?info[k].w2:sh?info[k].ws:info[k].w;for(const rad of [rc+2.5,rc+6,rc+10,rc+15,rc+21,rc+28,rc+36,rc+46,rc+58,rc+70,rc+84])for(let i=0;i<24;i++){const th=i*Math.PI/12;const ux=Math.cos(th),uy=Math.sin(th);const w=w0*sc0,fs=fs0*sc0;
+   const hw=w/2+1,hh=sh===2?fs*1.22:fs*.68;const cx=c.x+ux*(rad+Math.abs(ux)*hw),cy=c.y+uy*(rad+Math.abs(uy)*hh);
    const b0={l:cx-hw,r:cx+hw,t:cy-hh,b:cy+hh},M=1.4,b={l:b0.l-M,r:b0.r+M,t:b0.t-M,b:b0.b+M};
-   const pref=(Math.abs(uy)<.2&&ux>0?0:Math.abs(uy)<.2?1.5:Math.abs(ux)<.2?1:2.5)+(sc0<1?30:0)+(sh?18:0);
+   const pref=(Math.abs(uy)<.2&&ux>0?0:Math.abs(uy)<.2?1.5:Math.abs(ux)<.2?1:2.5)+(sc0<1?30:0)+(sh===1?18:sh===2?10:0);
    const dist=rad-rc,lead=dist>9;
    // leader: grows quickly with length so a far label is a last resort
    let s=dist*1.8+pref+(lead?Math.max(0,dist-20)*1.2:0);
    const R=[[b.l,b.t],[b.r,b.t],[b.r,b.b],[b.l,b.b]];
    for(let j=0;j<cars.length;j++){const q=carBB[j];if(q.x1<b.l||q.x0>b.r||q.y1<b.t||q.y0>b.b)continue;if(sat(R,cars[j])){s+=1000;break}}
    if(s>=1000){out.push({s,b:b0,x:cx,y:cy+fs*.36,fs,lead,sh,dead:1});continue}
-   let amb=0;const lx=cx,ly=cy,own=Math.hypot(lx-c.x,ly-c.y);
+   // ambiguity: another station is about as close to the text box as its own station is
+   let amb=0;const rd=(x,y)=>Math.hypot(Math.max(b0.l-x,0,x-b0.r),Math.max(b0.t-y,0,y-b0.b));const own=rd(c.x,c.y);
+   if(own<rc+1.8)s+=900;
    for(const q of keys){if(q===k)continue;const x=C[q].x,y=C[q].y,m=info[q].rc+3;if(x+m>b.l&&x-m<b.r&&y+m>b.t&&y-m<b.b)s+=900;
-    const dq=Math.hypot(lx-x,ly-y);if(dq<own)amb=Math.max(amb,30+(own-dq))}
+    const dq=rd(x,y);if(dq<own+6)amb=Math.max(amb,30+(own+6-dq)*2)}
    s+=amb;if(b.l<3||b.r>W-3||b.t<3||b.b>H-3)s+=300;
    let seg=null;
    if(lead){const bx=Math.max(b0.l,Math.min(c.x,b0.r)),by=Math.max(b0.t,Math.min(c.y,b0.b));seg=[[c.x,c.y],[bx,by]];const L=[[c.x,c.y],[bx,by],[bx+.01,by+.01],[c.x+.01,c.y+.01]];
     for(let j=0;j<cars.length;j++){const q=carBB[j];if(q.x1<Math.min(c.x,bx)||q.x0>Math.max(c.x,bx)||q.y1<Math.min(c.y,by)||q.y0>Math.max(c.y,by))continue;if(sat(L,cars[j]))s+=120}
     for(const r of ROUTES){if(r.a===k||r.b===k)continue;if(X(seg[0],seg[1],[C[r.a].x,C[r.a].y],[C[r.b].x,C[r.b].y]))s+=45}}
-   out.push({s,b:b0,bm:b,x:cx,y:cy+fs*.36,fs,lead,seg,sh})}}
+   out.push({s,b:b0,bm:b,x:cx,y:cy+fs*.36,cy,fs,lead,seg,sh})}}
   CA[k]=out.filter(o=>!o.dead).sort((a,b)=>a.s-b.s);if(!CA[k].length)CA[k]=[out.sort((a,b)=>a.s-b.s)[0]]}
  // interaction cost between two placed labels
  const pair=(A,B)=>{let s=0;const a=A.bm||A.b,b=B.bm||B.b;if(a.l<b.r&&a.r>b.l&&a.t<b.b&&a.b>b.t)s+=900;if(A.seg&&B.seg&&X(A.seg[0],A.seg[1],B.seg[0],B.seg[1]))s+=200;return s};
@@ -1051,7 +1060,7 @@ function labelPos(){
     const hit=keys.filter(q=>q!==k&&pair(o,pick[q])>0);hit.forEach(respond);hit.forEach(respond);
     if(total()<base-1){improved=true;break}Object.assign(pick,save)}}
   if(!improved)break}
- for(const k of keys){const p=pick[k];LBL[k]={x:p.x,y:p.y,an:'middle',lead:p.lead,s:cost(k,p),b:p.b,fs:p.fs,small:p.fs<info[k].fs-.1,txt:p.sh?SHORT[k]:C[k].name}}
+ for(const k of keys){const p=pick[k];LBL[k]={x:p.x,y:p.y,cy:p.cy,two:p.sh===2,an:'middle',lead:p.lead,s:cost(k,p),b:p.b,fs:p.fs,small:p.fs<info[k].fs-.1,txt:p.sh?SHORT[k]:C[k].name}}
  return LBL;
 }
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{LBL=null;render()});
@@ -1111,7 +1120,9 @@ function renderMap(){
   else if(mine)s+=`<circle cx="${c.x}" cy="${c.y}" r="${big?10:8.5}" fill="#f6b93b" fill-opacity=".25" stroke="#f6a823" stroke-width="2.4" stroke-dasharray="3 2"/>`;
   s+=`<circle cx="${c.x}" cy="${c.y+.8}" r="${big?6:4.8}" fill="#0b223040"/><circle cx="${c.x}" cy="${c.y}" r="${big?6:4.8}" fill="#fff" stroke="#0b2230" stroke-width="1.8"/><circle cx="${c.x}" cy="${c.y}" r="${big?2.4:1.6}" fill="${big?'#f6a823':'#0b2230'}"/>`;
   if(lp.lead){const bx=Math.max(lp.b.l,Math.min(c.x,lp.b.r)),by=Math.max(lp.b.t,Math.min(c.y,lp.b.b));const dd=Math.hypot(bx-c.x,by-c.y)||1;const r0=(big?7:5.8);s+=`<line x1="${(c.x+(bx-c.x)/dd*r0).toFixed(1)}" y1="${(c.y+(by-c.y)/dd*r0).toFixed(1)}" x2="${bx.toFixed(1)}" y2="${by.toFixed(1)}" stroke="#1c2a32" stroke-opacity=".55" stroke-width=".9"/>`}
-  s+=`<text x="${lp.x.toFixed(1)}" y="${lp.y.toFixed(1)}" text-anchor="${lp.an}"${lp.small?` style="font-size:${lp.fs.toFixed(1)}px"`:''}>${lp.txt||c.name}</text></g>`}
+  const fsx=lp.small?` style="font-size:${lp.fs.toFixed(1)}px"`:'';
+  if(lp.two){const ls=lp.fs*1.08,y1=lp.cy-ls/2+lp.fs*.36;s+=`<text text-anchor="middle"${fsx}>${SPLIT[k].map((t,i)=>`<tspan x="${lp.x.toFixed(1)}" y="${(y1+i*ls).toFixed(1)}">${t}</tspan>`).join('')}</text></g>`}
+  else s+=`<text x="${lp.x.toFixed(1)}" y="${lp.y.toFixed(1)}" text-anchor="${lp.an}"${fsx}>${lp.txt||c.name}</text></g>`}
  m.innerHTML=s;
 }
 
