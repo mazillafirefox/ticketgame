@@ -164,15 +164,29 @@ button,.card,.hc,.tk{touch-action:manipulation}
 details{background:#f6eedd;border-radius:12px;padding:9px 12px}
 summary{font-weight:600;color:var(--navy);font-size:13px}
 /* results */
-.podium{display:flex;align-items:flex-end;justify-content:center;gap:8px;margin:14px 0 6px}
-.pod{flex:1;max-width:110px;text-align:center}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:8px;margin:14px 0 10px}
+.pod{flex:1;max-width:110px;min-width:0;text-align:center}
+.pod .md{font-size:22px;line-height:1;margin-bottom:2px}
 .pod .av{width:38px;height:38px;font-size:18px;margin:0 auto 4px}
-.pod .blk{border-radius:10px 10px 0 0;background:linear-gradient(180deg,#1b4760,#0f2c3d);color:#fff;padding:8px 4px;font-weight:800;font-size:18px}
-.pod.p1 .blk{background:linear-gradient(180deg,#ffd56b,#f6a823);color:var(--navy);height:96px}
-.pod.p2 .blk{height:72px}.pod.p3 .blk{height:56px}.pod.p4 .blk{height:44px}.pod.p5 .blk{height:36px}
+.pod .nm{font-size:12px;font-weight:700;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pod .blk{border-radius:10px 10px 0 0;background:linear-gradient(180deg,#1b4760,#0f2c3d);color:#fff;padding:10px 4px 0;font-weight:800;font-size:20px;line-height:1.1;box-sizing:border-box}
+.pod .blk small{display:block;font-size:10px;font-weight:600;opacity:.8}
+.pod.p1 .blk{background:linear-gradient(180deg,#ffd56b,#f6a823);color:var(--navy);height:92px}
+.pod.p2 .blk{background:linear-gradient(180deg,#c9d3da,#8d9ba5);color:var(--navy);height:72px}
+.pod.p3 .blk{background:linear-gradient(180deg,#e0a67a,#b06a3b);height:58px}
+.rank{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.rk{display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:4px 10px;padding:9px 10px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.rk.me{border-color:#f6a823;background:#fff8e6}
+.rk .no{grid-row:span 2;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;background:#eef2f4;color:var(--navy)}
+.rk .no.m{background:none;font-size:24px}
+.rk .who{font-weight:700;font-size:14px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.rk .who i{width:10px;height:10px;border-radius:50%;flex:none}
+.rk .tot{grid-row:span 2;font-weight:800;font-size:22px;color:var(--navy);text-align:right;line-height:1}
+.rk .tot small{display:block;font-size:10px;font-weight:600;color:var(--mute)}
+.rk .bd{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:11.5px;color:#56656d}
+.rk .bd b{color:var(--navy)}
 #players.n5{gap:4px}#players.n5 .pl{padding:5px 5px}#players.n5 .pl .nm{font-size:10.5px}#players.n5 .pl .sc{font-size:16px}#players.n5 .pl .sc span{display:none}#players.n5 .pl .meta{gap:4px;font-size:9px}#players.n5 .av{width:15px;height:15px;font-size:9px}#players.n5 .you{display:none}
 .seg button{min-width:0}
-.pod .nm{font-size:12px;font-weight:600;margin-bottom:4px}
 table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
 td,th{padding:7px 4px;border-bottom:1px solid var(--line);text-align:right}
 th{font-size:10.5px;color:var(--mute);font-weight:600}
@@ -872,7 +886,7 @@ const inkCls=c=>(c==='white'||c==='yellow')?'dark-ink':'';
 const bgOf=c=>c==='loco'?'':`background:${CH[c]}`;
 function cardStyle(c){return c==='loco'?'':`background:${CH[c]};`}
 function rectOf(sel){const e=document.querySelector(sel);return e?e.getBoundingClientRect():null}
-function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2200)}
+function toast(m){if(/^(ต้อง|ใบที่สองหยิบ|รอทุกคน|ส่งข้อมูลไม่|ยังไม่ได้เชื่อม)/.test(m))Sfx.err();const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2200)}
 let bannerT;
 function banner(t,s){const b=$('banner');b.innerHTML=`<div class="b"><b>${t}</b><span>${s||''}</span></div>`;b.style.display='flex';clearTimeout(bannerT);bannerT=setTimeout(()=>b.style.display='none',1500)}
 function fly(fr,c){
@@ -1018,7 +1032,7 @@ function renderMap(){
  <polygon points="${pts}" fill="#fff" opacity=".35" transform="translate(0,0) scale(1)" stroke="#fff" stroke-width="9" stroke-linejoin="round"/>
  <polygon points="${pts}" fill="url(#land)" stroke="#c9b583" stroke-width="1.4" stroke-linejoin="round" filter="url(#landSh)"/>`;
  const lbl=(x,y,t,r=0,sz=11)=>`<text x="${x}" y="${y}" transform="rotate(${r} ${x} ${y})" font-family="Prompt" font-size="${sz}" font-weight="500" font-style="italic" fill="#2f6f8c" fill-opacity=".7" letter-spacing="2" text-anchor="middle">${t}</text>`;
- s+=lbl(345,606,'อ่าวไทย',0,13)+lbl(36,606,'ทะเลอันดามัน',-78,11)+lbl(46,322,'เมียนมา',-70,10)+lbl(342,90,'ลาว',0,10)+lbl(425,509,'กัมพูชา',0,10)+lbl(226,894,'มาเลเซีย',0,10);
+ s+=lbl(345,606,'อ่าวไทย',0,13)+lbl(36,606,'ทะเลอันดามัน',-78,11);
  // compass
  s+=`<g transform="translate(454,670)" opacity=".85"><circle r="17" fill="#fffaf1" fill-opacity=".55" stroke="#2f6f8c" stroke-opacity=".5"/><path d="M0-15L4 0 0 15-4 0Z" fill="#2f6f8c" fill-opacity=".35"/><path d="M0-15L4 0H-4Z" fill="#c62828"/><text y="-20" text-anchor="middle" font-size="8" font-weight="700" fill="#2f6f8c" font-family="Prompt">N</text></g>`;
  const myCities=new Set();if(G&&G.players[ME]&&revealed()&&hintLv()!=='none')G.players[ME].tickets.forEach(id=>{const t=TICKETS[id];if(!connected(ME,t.a,t.b)){myCities.add(t.a);myCities.add(t.b)}});
@@ -1153,20 +1167,41 @@ setInterval(()=>{
  }
 },500);
 // ---------- sound & vibration ----------
-const Sfx={on:true,ctx:null,
- init(){if(!this.ctx){try{this.ctx=new (window.AudioContext||window.webkitAudioContext)()}catch(_){}}try{if(this.ctx&&this.ctx.state==='suspended')this.ctx.resume()}catch(_){}},
- tone(f,d,type,v,delay){if(!this.on||!this.ctx)return;try{const t=this.ctx.currentTime+(delay||0);const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(v||.12,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(this.ctx.destination);o.start(t);o.stop(t+d+.05)}catch(_){}},
- turn(){this.tone(660,.16,'triangle',.13);this.tone(880,.22,'triangle',.13,.13);vib(40)},
- card(){this.tone(1300,.05,'square',.04)},
- claim(mine){for(let i=0;i<3;i++)this.tone(mine?196+i*49:165,.1,'sawtooth',mine?.07:.04,i*.09);if(mine)vib([25,40,25])},
- ticket(){[523,659,784,1047].forEach((f,i)=>this.tone(f,.24,'triangle',.13,i*.11));vib([40,40,90])},
- end(win){(win?[523,659,784,1047,1319]:[392,349,330,262]).forEach((f,i)=>this.tone(f,.32,'triangle',.13,i*.16))}};
+const Sfx={on:true,ctx:null,out:null,nb:null,
+ init(){if(!this.ctx){try{const c=new (window.AudioContext||window.webkitAudioContext)();this.ctx=c;const comp=c.createDynamicsCompressor();comp.threshold.value=-18;comp.ratio.value=4;const m=c.createGain();m.gain.value=.55;m.connect(comp);comp.connect(c.destination);this.out=m;
+   const n=c.createBuffer(1,c.sampleRate*.6,c.sampleRate),d=n.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;this.nb=n}catch(_){}}
+  try{if(this.ctx&&this.ctx.state==='suspended')this.ctx.resume()}catch(_){}},
+ ok(){return this.on&&this.ctx&&this.out},
+ env(g,t,v,at,d){g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(v,t+at);g.gain.exponentialRampToValueAtTime(.0001,t+d)},
+ tone(f,d,o){if(!this.ok())return;o=o||{};try{const c=this.ctx,t=c.currentTime+(o.delay||0),osc=c.createOscillator(),g=c.createGain();osc.type=o.type||'sine';osc.frequency.setValueAtTime(f,t);if(o.to)osc.frequency.exponentialRampToValueAtTime(o.to,t+d*.8);if(o.det)osc.detune.value=o.det;
+   let last=g;if(o.lp){const fl=c.createBiquadFilter();fl.type='lowpass';fl.frequency.value=o.lp;g.connect(fl);last=fl}
+   this.env(g,t,o.v||.12,o.at||.01,d);osc.connect(g);last.connect(this.out);osc.start(t);osc.stop(t+d+.05)}catch(_){}},
+ noise(d,o){if(!this.ok())return;o=o||{};try{const c=this.ctx,t=c.currentTime+(o.delay||0),src=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();src.buffer=this.nb;f.type=o.ft||'bandpass';f.frequency.setValueAtTime(o.f||1500,t);if(o.fto)f.frequency.exponentialRampToValueAtTime(o.fto,t+d);f.Q.value=o.q||1;
+   this.env(g,t,o.v||.1,o.at||.004,d);src.connect(f);f.connect(g);g.connect(this.out);src.start(t,Math.random()*.3);src.stop(t+d+.05)}catch(_){}},
+ bell(f,d,v,delay){[[1,1],[2.76,.35],[5.4,.12]].forEach(([m,a])=>this.tone(f*m,d/(m>1?2:1),{v:v*a,delay,at:.004}))},
+ // a card slides off the deck
+ card(soft){const v=soft?.05:.11;this.noise(.09,{f:2600,fto:5200,q:.8,v});this.tone(1900,.04,{v:v*.5,delay:.03,type:'triangle'})},
+ // two-note station chime
+ turn(){this.bell(659,.7,.11,0);this.bell(988,.9,.1,.16);vib(40)},
+ // train chugging in, plus a whistle when it is your route
+ claim(mine){const n=mine?5:3,v=mine?.16:.08;for(let i=0;i<n;i++){const t=i*(.13-i*.012);this.noise(.1,{ft:'lowpass',f:900,fto:250,v,delay:t});this.tone(70,.08,{v:v*.6,delay:t,type:'sine'})}
+  if(mine){[740,932].forEach(f=>this.tone(f,.42,{type:'triangle',v:.07,delay:.52,at:.04,lp:2400}));vib([25,40,25])}},
+ // paper shuffle when drawing tickets
+ tickets(){[0,.07,.15].forEach(d=>this.noise(.08,{f:3200,q:.6,v:.07,delay:d}))},
+ // bright bell arpeggio for a finished ticket
+ ticket(){[1047,1319,1568,2093].forEach((f,i)=>this.bell(f,.6,.08,i*.09));vib([40,40,90])},
+ // train horn when the final round starts
+ final(){[311,370,466].forEach(f=>this.tone(f,.9,{type:'sawtooth',v:.045,at:.06,lp:1100}));[311,370,466].forEach(f=>this.tone(f,.6,{type:'sawtooth',v:.04,at:.05,lp:1100,delay:1}));vib([80,60,160])},
+ // soft "no" for an invalid action
+ err(){this.tone(220,.12,{type:'square',v:.035,lp:900});this.tone(185,.16,{type:'square',v:.035,lp:900,delay:.11});vib(30)},
+ end(win){if(win){const ch=[[523,659,784],[587,740,880],[659,831,988],[784,988,1175,1568]];ch.forEach((c,i)=>c.forEach(f=>this.tone(f,i===3?1.1:.26,{type:'triangle',v:.06,delay:i*.2,lp:3500})));setTimeout(()=>this.ticket(),900)}
+  else[523,494,440,392,330].forEach((f,i)=>this.tone(f,.38,{type:'triangle',v:.08,delay:i*.18,lp:2200}))}};
 function vib(p){try{if(Sfx.on&&navigator.vibrate)navigator.vibrate(p)}catch(_){}}
 function toggleSound(){Sfx.on=!Sfx.on;store.set('sound',Sfx.on);Sfx.init();sndIcon();if(Sfx.on)Sfx.card()}
 function sndIcon(){if(!$('sndBtn'))return;$('sndBtn').innerHTML=Sfx.on?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9l5 6M22 9l-5 6"/></svg>'}
 ['pointerdown','touchstart','keydown'].forEach(t=>document.addEventListener(t,()=>Sfx.init(),{passive:true}));
 // ---------- what other players just did ----------
-let feedN=0,lastAct=0,doneKey='',hlPath=null,pulseRid=null,pulseT=null;
+var finalSeen=null;let feedN=0,lastAct=0,doneKey='',hlPath=null,pulseRid=null,pulseT=null;
 function feed(m,col){const f=$('feed');const b=document.createElement('div');b.className='bub';b.innerHTML=`<span class="av" style="background:${col}"></span><span>${m}</span>`;f.appendChild(b);while(f.children.length>2)f.firstChild.remove();setTimeout(()=>b.remove(),2600)}
 function panTo(rid){if(userZoom||gestureOn)return;const r=ROUTES[rid],A=C[r.a],B=C[r.b];const mx=(A.x+B.x)/2,my=(A.y+B.y)/2;const b=box();
  const vis={x:V.x,y:V.y,w:b.w/S,h:b.h/S};if(mx>vis.x+20&&mx<vis.x+vis.w-20&&my>vis.y+20&&my<vis.y+vis.h-20)return;
@@ -1179,6 +1214,8 @@ function afterRender(){
  if(fresh.length<=4)fresh.forEach(l=>{if(!(l.p===ME&&rv&&!G.players[ME].ai))feed(l.m,G.players[l.p]?G.players[l.p].col:'#999')});
  // action effects
  if(G.act&&G.act.id!==lastAct){const a=G.act;lastAct=a.id;const mine=a.seat===ME&&rv;
+  if(a.type==='tickets'&&mine)Sfx.tickets();
+  if(a.type==='face'&&!mine)Sfx.card(true);
   if(a.type==='claim'){Sfx.claim(mine);if(!mine){pulseRid=a.rid;clearTimeout(pulseT);pulseT=setTimeout(()=>{pulseRid=null},1700);panTo(a.rid);renderMap()}}
  }
  // ticket completed?
@@ -1256,6 +1293,7 @@ function render(){
  if(MODE!=='local')st+=`<span class="net ${Net.ok?'on':''}">${Net.ok?'● ออนไลน์':'○ หลุด'}</span>`;
  $('status').innerHTML=st;
  $('final').style.display=G.final!==null&&!G.over?'block':'none';
+ if(G.final!==null&&!G.over&&finalSeen!==G.gid){finalSeen=G.gid;Sfx.final()}
  $('tkCount').textContent=G.players[ME].tickets.length;
  renderSide();
  if(sheetKind==='tickets'&&$('sheetBg').classList.contains('show')&&revealed()){const sc=$('sheet').scrollTop;$('sheet').innerHTML='<div class="grab"></div><h2>ตั๋วของ'+(MODE==='local'&&humans().length>1?' '+esc(G.players[ME].name):'ฉัน')+'</h2>'+ticketsHTML(true)+'<button class="btn ghost" style="width:100%;margin-top:8px" onclick="hideSheet()">ปิด</button>';$('sheet').scrollTop=sc}
@@ -1398,11 +1436,15 @@ function showResult(){
  if(!G||!G.result)return;const sorted=G.result,P=i=>G.players[i];const win=P(sorted[0].i);
  const order=sorted.length>=3?[sorted[1],sorted[0],sorted[2],...sorted.slice(3)]:sorted.length===2?[sorted[1],sorted[0]]:sorted;
  const iWon=sorted[0].i===ME&&(MODE!=='local'||humans().length===1);
- let h=`<h2 style="text-align:center">${iWon?'🎉 คุณชนะ!':'🏆 '+win.name+' ชนะ!'}</h2><p class="sub" style="text-align:center;margin:0">สรุปคะแนนจบเกม</p><div class="podium">`;
- order.forEach(r=>{const rank=sorted.indexOf(r)+1,p=P(r.i);h+=`<div class="pod p${rank}"><div class="av" style="background:${p.col}">${p.ai?'🤖':'😊'}</div><div class="nm">${p.name}</div><div class="blk">${r.total}<div style="font-size:10px;font-weight:600;opacity:.8">อันดับ ${rank}</div></div></div>`});
- h+=`</div><table><tr><th>ผู้เล่น</th><th>เส้นทาง</th><th>ตั๋ว</th><th>ยาวสุด</th><th>รวม</th></tr>`;
- sorted.forEach(r=>{const p=P(r.i);h+=`<tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${p.col}"></span> ${p.name}</td><td>${r.routes}</td><td><span style="color:#2e7d32">+${r.tp}</span> <span style="color:#b71c1c">−${r.tm}</span></td><td>${r.bonus?'<b>+10</b>':'–'} <span style="color:#99a">(${r.lg})</span></td><td><b>${r.total}</b></td></tr>`});
- h+='</table><details style="margin-top:12px"><summary>ดูตั๋วของทุกคน</summary>';
+ const MED=['🥇','🥈','🥉'],top=sorted.slice(0,3),porder=top.length===3?[top[1],top[0],top[2]]:top.length===2?[top[1],top[0]]:top;
+ let h=`<h2 style="text-align:center">${iWon?'🎉 คุณชนะ!':'🏆 '+esc(win.name)+' ชนะ!'}</h2><p class="sub" style="text-align:center;margin:0">สรุปคะแนนจบเกม</p><div class="podium">`;
+ porder.forEach(r=>{const rank=sorted.indexOf(r)+1,p=P(r.i);h+=`<div class="pod p${rank}"><div class="md">${MED[rank-1]}</div><div class="av" style="background:${p.col}">${p.ai?'🤖':'😊'}</div><div class="nm">${esc(p.name)}</div><div class="blk">${r.total}<small>แต้ม</small></div></div>`});
+ h+=`</div><div class="lbl2">ตารางคะแนน</div><div class="rank">`;
+ sorted.forEach((r,k)=>{const p=P(r.i),me=r.i===ME&&(MODE!=='local'||humans().length===1);
+  h+=`<div class="rk${me?' me':''}"><div class="no${k<3?' m':''}">${k<3?MED[k]:k+1}</div><div class="who"><i style="background:${p.col}"></i>${esc(p.name)}${p.ai?' 🤖':''}${me?' <small style="color:#b07a00">(คุณ)</small>':''}</div><div class="tot">${r.total}<small>แต้ม</small></div>`+
+  `<div class="bd"><span>🛤️ เส้นทาง <b>${r.routes}</b></span><span>🎫 ตั๋ว <b style="color:#2e7d32">+${r.tp}</b>${r.tm?` <b style="color:#b71c1c">−${r.tm}</b>`:''}</span><span>📏 ยาวสุด ${r.lg} ตู้${r.bonus?' <b>+10</b>':''}</span></div></div>`});
+ h+='</div>';
+ h+='<details style="margin-top:12px"><summary>ดูตั๋วของทุกคน</summary>';
  sorted.forEach(r=>{h+=`<p style="margin-top:10px"><b>${P(r.i).name}</b></p>`;r.tl.forEach(({id,ok})=>{const t=TICKETS[id];h+=`<div style="font-size:12.5px;color:#46545b">${ok?'✅':'❌'} ${C[t.a].name} → ${C[t.b].name} (${ok?'+':'−'}${t.pts})</div>`})});
  h+=`</details><div class="acts" style="margin-top:14px"><button class="btn ghost" onclick="hideSheet()">ดูแผนที่</button></div>${MODE==='guest'?'<p class="sub" style="text-align:center;margin-top:10px">รอเจ้าของห้องเริ่มรอบใหม่…</p>':`<div class="lbl2" style="margin-top:14px">เล่นอีกรอบ — ใครเริ่มก่อน?</div><div class="seg again"><button onclick="playAgain('random')">🎲<b>สุ่ม</b></button><button onclick="playAgain('next')">➡️<b>คนถัดไป</b><small>${esc(G.players[(G.first+1)%G.players.length].name)}</small></button><button onclick="playAgain('loser')">🐢<b>แต้มน้อยสุด</b><small>${esc(G.players[G.result[G.result.length-1].i].name)}</small></button></div>`}`;
  showSheet(h);
