@@ -187,6 +187,8 @@ summary{font-weight:600;color:var(--navy);font-size:13px}
 .rk .bd b{color:var(--navy)}
 #players.n5{gap:4px}#players.n5 .pl{padding:5px 5px}#players.n5 .pl .nm{font-size:10.5px}#players.n5 .pl .sc{font-size:16px}#players.n5 .pl .sc span{display:none}#players.n5 .pl .meta{gap:4px;font-size:9px}#players.n5 .av{width:15px;height:15px;font-size:9px}#players.n5 .you{display:none}
 .seg button{min-width:0}
+.seg.lv5{gap:5px}.seg.lv5 button{padding:9px 2px;font-size:13px;gap:1px}.seg.lv5 small{font-size:9.5px}
+.stars{font-size:8.5px;letter-spacing:-.5px;color:#f6a823;line-height:1;height:10px}
 table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
 td,th{padding:7px 4px;border-bottom:1px solid var(--line);text-align:right}
 th{font-size:10.5px;color:var(--mute);font-weight:600}
@@ -748,7 +750,7 @@ function aiCost(pi,trains){return r=>{const o=G.owner[r.id];return o===pi?0:usab
 function aiNeeds(pi){
  const p=G.players[pi];const list=[];
  p.tickets.forEach(id=>{const t=TICKETS[id];if(connected(pi,t.a,t.b))return;
-  const lv=p.lvl==='hard'&&HP.lb?HP.lb:0;const base=aiCost(pi,p.trains);
+  const lv=isHard(p.lvl)&&hpOf(p.lvl).lb?hpOf(p.lvl).lb:0;const base=aiCost(pi,p.trains);
   const s=dijkstra(t.a,t.b,lv?r=>{const c=base(r);return c===Infinity||c===0?c:c-lv*(PTS[r.len]/r.len-1)}:base);
   if(lv){s.cost=s.rids.reduce((a,id)=>a+(G.owner[id]===pi?0:ROUTES[id].len),0)}
   if(s.cost<=p.trains)list.push(s)});
@@ -763,8 +765,10 @@ function aiChooseTickets(pi,off,min){
  const p=G.players[pi],lvl=p.lvl||'normal';
  const sc=off.map(id=>{const t=TICKETS[id];const c=ticketCost(pi,id);return {id,c,pts:t.pts,r:c/Math.max(1,t.pts)}});
  let keep=[];
- if(lvl==='easy'){sc.sort((a,b)=>a.c-b.c);keep=sc.slice(0,min).map(s=>s.id)}
- else if(lvl==='hard'&&HP.combo){
+ const HP=hpOf(lvl);
+ if(lvl==='novice'){keep=sc.slice().sort(()=>Math.random()-.5).slice(0,min).map(s=>s.id)}
+ else if(lvl==='easy'){sc.sort((a,b)=>a.c-b.c);keep=sc.slice(0,min).map(s=>s.id)}
+ else if(isHard(lvl)&&HP.combo){
   // pick the subset whose combined plan is most efficient (shared track counted once)
   const cur=p.tickets.filter(id=>!connected(pi,TICKETS[id].a,TICKETS[id].b));
   const plan=ids=>{const own=new Set();let cost=0;
@@ -777,7 +781,7 @@ function aiChooseTickets(pi,off,min){
    const sc=sub.reduce((a,id)=>a+TICKETS[id].pts,0)-HP.k*(c-baseCost);
    if(!best||sc>best.sc)best={sc,sub}}
   if(best)keep=best.sub;else{sc.sort((a,b)=>a.c-b.c);keep=sc.slice(0,min).map(s=>s.id)}
- } else if(lvl==='hard'&&!HP.tkNormal){
+ } else if(isHard(lvl)&&!HP.tkNormal){
   sc.sort((a,b)=>a.r-b.r||a.c-b.c);let used=0;
   sc.forEach((s,i)=>{if(s.c===Infinity)return;if(keep.length<min||(s.r<=HP.ratio&&used+s.c<=p.trains-6)){keep.push(s.id);used+=s.c}});
   if(keep.length<min)sc.filter(s=>!keep.includes(s.id)).slice(0,min-keep.length).forEach(s=>keep.push(s.id));
@@ -798,12 +802,12 @@ function aiDraw(pi,routeIds,lvl){
  for(let k=0;k<2;k++){
   if(!cardsLeft(k===1))break;
   let idx=-1;
-  if(lvl!=='easy'||Math.random()<.4){
+  if(lvl==='novice'?Math.random()<.2:lvl!=='easy'||Math.random()<.4){
    const cands=G.face.map((c,i)=>({c,i})).filter(x=>x.c&&x.c!=='loco'&&want[x.c]>0).sort((a,b)=>want[b.c]-want[a.c]);
    if(cands.length)idx=cands[0].i;
   }
   if(idx<0&&k===0&&G.face.includes('loco')){
-   const take=lvl==='hard'?totalWant>=3:lvl==='normal'?(Object.values(want).some(v=>v>=2)&&Math.random()<.5):false;
+   const take=isHard(lvl)?totalWant>=hpOf(lvl).loco:lvl==='normal'?(Object.values(want).some(v=>v>=2)&&Math.random()<.5):false;
    if(take)idx=G.face.indexOf('loco');
   }
   if(idx<0&&!(G.deck.length+G.discard.length)){idx=G.face.findIndex(c=>c&&c!=='loco');if(idx<0&&k===0)idx=G.face.findIndex(c=>c)}
@@ -816,7 +820,12 @@ function aiDrawTickets(pi){
  const p=G.players[pi];const off=[];for(let i=0;i<3&&G.tdeck.length;i++)off.push(G.tdeck.pop());
  const k=aiChooseTickets(pi,off,1);log(`${p.name} จั่วตั๋วและเก็บไว้ ${k} ใบ`);G.act={seat:pi,type:'tickets',id:++G.evId};
 }
+const isHard=l=>l==='hard'||l==='expert';
 const HP={combo:1,k:1.5,slack:10,dead:8,cw:1.5,hand:14,block:.2,tkTrains:20,ratio:.75,focus:1,long:4,lb:.6};
+// hard = tuned base + bigger hand & stricter ticket greed; expert pushes further (simulated: each beats the level below)
+Object.assign(HP,{k:2,hand:16,blen:2,tkMax:8,loco:3,watch:0});
+const HPX=Object.assign({},HP,{k:2.5,hand:18,loco:5,cw:1,slack:12,tkTrains:26});
+const hpOf=l=>l==='expert'?HPX:HP;
 const DEG={};ROUTES.forEach(r=>{(DEG[r.a]=DEG[r.a]||new Set()).add(r.b);(DEG[r.b]=DEG[r.b]||new Set()).add(r.a)});
 function aiTurn(pi){
  if(G.over||G.phase!=="play")return;const p=G.players[pi];const lvl=p.lvl||'normal';
@@ -826,16 +835,18 @@ function aiTurn(pi){
  const allDone=p.tickets.every(id=>connected(pi,TICKETS[id].a,TICKETS[id].b));
  const doClaim=(r,o)=>{claim(pi,r,bestOpt(p,o));endTurn()};
  // ---------- easy: casual, short-sighted ----------
- if(lvl==='easy'){
+ if(lvl==='easy'||lvl==='novice'){const nv=lvl==='novice';
   let cand=afford(need.all).sort((a,b)=>a.r.len-b.r.len);
-  if(cand.length&&Math.random()<.65)return doClaim(cand[0].r,cand[0].o);
+  if(cand.length&&Math.random()<(nv?.45:.65))return doClaim(cand[0].r,cand[0].o);
   const any=afford(ROUTES.map(r=>r.id));
-  if(any.length&&(Math.random()<.2||endgame||handCount(p)>=12||!cardsLeft(false))){const x=any[Math.random()*any.length|0];return doClaim(x.r,x.o)}
+  if(any.length&&(Math.random()<(nv?.35:.2)||endgame||handCount(p)>=12||!cardsLeft(false))){const x=any[Math.random()*any.length|0];return doClaim(x.r,x.o)}
   if(!cardsLeft(false)){log(`${p.name} ข้ามตา`);return endTurn()}
-  aiDraw(pi,need.all,'easy');return endTurn();
+  aiDraw(pi,need.all,lvl);return endTurn();
  }
  // ---------- hard: like normal, but bottlenecks first, smarter cards, endgame squeeze, light blocking ----------
- if(lvl==='hard'){
+ if(isHard(lvl)){const HP=hpOf(lvl);
+  const rush=HP.watch&&G.players.some((q,j)=>j!==pi&&q.trains<=HP.watch);
+  const endgame2=endgame||rush;
   const crit={};
   p.tickets.forEach(id=>{const t=TICKETS[id];if(connected(pi,t.a,t.b))return;
    const base=dijkstra(t.a,t.b,aiCost(pi,p.trains));if(base.cost>p.trains)return;
@@ -847,18 +858,18 @@ function aiTurn(pi){
   const cand=afford(pool).map(x=>({...x,sc:PTS[x.r.len]+HP.cw*(crit[x.r.id]||0)})).sort((a,b)=>b.sc-a.sc);
   if(cand.length)return doClaim(cand[0].r,cand[0].o);
   if(HP.long&&!ids.length){const lg=afford(ROUTES.map(r=>r.id)).filter(x=>x.r.len>=HP.long);if(lg.length)return doClaim(lg[0].r,lg[0].o)}
-  if(endgame||!cardsLeft(false)||handCount(p)>=HP.hand){
+  if(endgame2||!cardsLeft(false)||handCount(p)>=HP.hand){
    const any=afford(ROUTES.map(r=>r.id)).sort((a,b)=>PTS[b.r.len]-PTS[a.r.len]);
-   if(any.length&&(any[0].r.len>=2||endgame||!cardsLeft(false)))return doClaim(any[0].r,any[0].o)}
+   if(any.length&&(any[0].r.len>=2||endgame2||!cardsLeft(false)))return doClaim(any[0].r,any[0].o)}
   if(HP.block&&p.trains>12&&Math.random()<HP.block){
    const opp=new Set();ROUTES.forEach(r=>{const o=G.owner[r.id];if(o>=0&&o!==pi){opp.add(r.a);opp.add(r.b)}});
-   const blk=afford(ROUTES.filter(r=>r.len<=2&&((DEG[r.a].size<=2&&opp.has(r.b)&&!opp.has(r.a))||(DEG[r.b].size<=2&&opp.has(r.a)&&!opp.has(r.b)))).map(r=>r.id));
+   const blk=afford(ROUTES.filter(r=>r.len<=HP.blen&&((DEG[r.a].size<=2&&opp.has(r.b)&&!opp.has(r.a))||(DEG[r.b].size<=2&&opp.has(r.a)&&!opp.has(r.b)))).map(r=>r.id));
    if(blk.length){log(`${p.name} ตัดเส้นทางคู่แข่ง`);return doClaim(blk[0].r,blk[0].o)}
   }
-  if(allDone&&p.tickets.length<8&&p.trains>=HP.tkTrains&&G.tdeck.length&&G.final===null){aiDrawTickets(pi);return endTurn()}
+  if(allDone&&!rush&&p.tickets.length<HP.tkMax&&p.trains>=HP.tkTrains&&G.tdeck.length&&G.final===null){aiDrawTickets(pi);return endTurn()}
   if(!cardsLeft(false)){log(`${p.name} ข้ามตา`);return endTurn()}
   const focus=ids.sort((a,b)=>crit[b]-crit[a]||ROUTES[b].len-ROUTES[a].len);
-  aiDraw(pi,focus.length?focus:need.all,'hard');return endTurn();
+  aiDraw(pi,focus.length?focus:need.all,lvl);return endTurn();
  }
  // ---------- normal ----------
  let cand=afford(need.focus);if(!cand.length)cand=afford(need.all);
@@ -1459,7 +1470,8 @@ function playAgain(how){
 
 // ---------- setup ----------
 let tab='bots',nb=2,lvl='normal';
-const LV={easy:'ง่าย',normal:'ปกติ',hard:'ยาก'},LVN={easy:'normal',normal:'hard',hard:'easy'};
+const LVL=['novice','easy','normal','hard','expert'];
+const LV={novice:'ง่ายมาก',easy:'ง่าย',normal:'ปกติ',hard:'ยาก',expert:'ยากมาก'},LVD={novice:'มือใหม่',easy:'สบาย ๆ',normal:'สมดุล',hard:'วางแผน',expert:'เซียน'},LVN={novice:'easy',easy:'normal',normal:'hard',hard:'expert',expert:'novice'};
 const store={get(k,d){try{const v=localStorage.getItem('siamrail.'+k);return v===null?d:JSON.parse(v)}catch(_){return d}},set(k,v){try{localStorage.setItem('siamrail.'+k,JSON.stringify(v))}catch(_){}}};
 let seatsDraft=store.get('seats',[{name:'ผู้เล่น 1',ai:false},{name:'ผู้เล่น 2',ai:false}]);
 let myName=store.get('name','');
@@ -1468,7 +1480,7 @@ function showSetup(){
  const tabs=[['bots','🤖','เล่นกับบอท'],['local','👥','เครื่องเดียว'],['online','🌐','ออนไลน์']];
  let body='';
  if(tab==='bots'){
-  body=`<div class="lbl2">ระดับความยากของบอท</div><div class="seg">${['easy','normal','hard'].map(k=>`<button class="${k===lvl?'on':''}" onclick="lvl='${k}';store.set('lvl',lvl);showSetup()">${LV[k]}<small>${k==='easy'?'เล่นสบาย ๆ':k==='normal'?'สมดุล':'วางแผน+ตัดหน้า'}</small></button>`).join('')}</div>
+  body=`<div class="lbl2">ระดับความยากของบอท</div><div class="seg lv5">${LVL.map((k,i)=>`<button class="${k===lvl?'on':''}" onclick="lvl='${k}';store.set('lvl',lvl);showSetup()"><span class="stars">${'★'.repeat(i+1)}</span>${LV[k]}<small>${LVD[k]}</small></button>`).join('')}</div>
   <div class="lbl2">จำนวนบอทที่จะเล่นด้วย</div><div class="seg">${[1,2,3,4].map(n=>`<button class="${n===nb?'on':''}" onclick="nb=${n};showSetup()"><span style="font-size:22px">🤖</span>${n} บอท<small>${n+1} ผู้เล่น · ${TRAINS[n+1]} ตู้</small></button>`).join('')}</div>
   ${firstPicker(['คุณ',...Array.from({length:nb},(_,i)=>'บอท '+(i+1))],'showSetup()')}
   ${hintPicker('showSetup()')}
