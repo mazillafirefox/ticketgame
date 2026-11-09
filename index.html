@@ -170,6 +170,8 @@ button,.card,.hc,.tk{touch-action:manipulation}
 .warn{background:#fdecea;color:#b71c1c;border-radius:11px;padding:10px 12px;font-size:13px;margin:10px 0;line-height:1.5}
 /* setup */
 .hero{margin:-27px -18px 14px;padding:26px 18px 18px;background:radial-gradient(circle at 80% 0,#1e5a78,transparent 60%),linear-gradient(160deg,#0b2230,#123447);color:#fff;border-radius:22px 22px 0 0;position:relative;overflow:hidden}
+.ochip{position:absolute;top:12px;right:14px;display:inline-flex;align-items:center;gap:6px;background:#ffffff1a;border:1px solid #ffffff26;color:#e6f1f5;font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:999px}.ochip:empty{display:none}
+.ochip i{width:7px;height:7px;border-radius:50%;background:#4ade80;box-shadow:0 0 0 3px #4ade8040;animation:opulse 2s infinite}@keyframes opulse{50%{box-shadow:0 0 0 5px #4ade8010}}
 .hero h2{color:#fff!important;font-size:26px!important}
 .hero p{color:#b6cad3;margin:2px 0 0!important;font-size:13px}
 .hero svg.train{position:absolute;right:-8px;bottom:-6px;width:170px;opacity:.95}
@@ -1040,21 +1042,22 @@ function placeLandmarks(L){
   if(Math.max(ax,bx)<b.l||Math.min(ax,bx)>b.r||Math.max(ay,by)<b.t||Math.min(ay,by)>b.b)return false;
   const s=(x,y)=>Math.sign((bx-ax)*(y-ay)-(by-ay)*(x-ax));const v=[s(b.l,b.t),s(b.r,b.t),s(b.r,b.b),s(b.l,b.b)];return !(v.every(q=>q>0)||v.every(q=>q<0))};
  const cv=document.createElement('canvas').getContext('2d');cv.font="500 6.6px 'Noto Sans Thai', sans-serif";
- const placed=[];let out='<g class="lm" opacity=".8">';
+ const placed=[];let out='<g class="lm" opacity=".8">';const CK=Object.keys(C),LB=Object.values(L).map(q=>q.b).filter(Boolean),LE=Object.entries(L).filter(e=>e[1].lead);
  for(const [k,icon,cap,sea] of LANDMARKS){const c=C[k];const tw=cv.measureText(cap).width;const hw=Math.max(10.5,tw/2+1),top=-11.5,bot=15;
   let best=null;
   for(let rad=16;rad<=96;rad+=5)for(let i=0;i<16;i++){const th=i*Math.PI/8,x=c.x+Math.cos(th)*rad,y=c.y+Math.sin(th)*rad;
    const b={l:x-hw,r:x+hw,t:y+top,b:y+bot};let s=rad;
    if(b.l<4||b.r>W-4||b.t<4||b.b>H-4)continue;
-   if(![[b.l,b.t],[b.r,b.t],[b.r,b.b],[b.l,b.b],[x,y]].every(([px,py])=>inLand(px,py)!==!!sea))continue;
-   if(sea&&[[b.l-6,y],[b.r+6,y],[x,b.t-6],[x,b.b+6]].some(([px,py])=>inLand(px,py)))continue;
-   {const own=Math.hypot(x-c.x,y-c.y);if(Object.keys(C).some(q=>q!==k&&Math.hypot(x-C[q].x,y-C[q].y)<own+4))continue}
-   const R=[[b.l-1,b.t-1],[b.r+1,b.t-1],[b.r+1,b.b+1],[b.l-1,b.b+1]];if(cars.some(q=>q.x1>b.l&&q.x0<b.r&&q.y1>b.t&&q.y0<b.b&&sat(R,q.P)))continue;
-   if(Object.values(L).some(q=>q.b&&q.b.r+2>b.l&&q.b.l-2<b.r&&q.b.b+2>b.t&&q.b.t-2<b.b))continue;
-   if(Object.values(C).some(q=>q.x+8>b.l&&q.x-8<b.r&&q.y+8>b.t&&q.y-8<b.b))continue;
+   if(best&&s>=best.s)continue;
+   {const own=Math.hypot(x-c.x,y-c.y);if(CK.some(q=>q!==k&&Math.hypot(x-C[q].x,y-C[q].y)<own+4))continue}
+   if(CK.some(q=>C[q].x+8>b.l&&C[q].x-8<b.r&&C[q].y+8>b.t&&C[q].y-8<b.b))continue;
+   if(LB.some(q=>q.r+2>b.l&&q.l-2<b.r&&q.b+2>b.t&&q.t-2<b.b))continue;
    if(placed.some(q=>q.r+3>b.l&&q.l-3<b.r&&q.b+3>b.t&&q.t-3<b.b))continue;
+   const R=[[b.l-1,b.t-1],[b.r+1,b.t-1],[b.r+1,b.b+1],[b.l-1,b.b+1]];if(cars.some(q=>q.x1>b.l&&q.x0<b.r&&q.y1>b.t&&q.y0<b.b&&sat(R,q.P)))continue;
+   if(![[x,y],[b.l,b.t],[b.r,b.t],[b.r,b.b],[b.l,b.b]].every(([px,py])=>inLand(px,py)!==!!sea))continue;
+   if(sea&&[[b.l-6,y],[b.r+6,y],[x,b.t-6],[x,b.b+6]].some(([px,py])=>inLand(px,py)))continue;
    for(const r of ROUTES)if(r.off>=0&&segX(b,C[r.a].x,C[r.a].y,C[r.b].x,C[r.b].y))s+=25;
-   for(const lp of Object.entries(L))if(lp[1].lead){const q=C[lp[0]],bb=lp[1].b;const bx=Math.max(bb.l,Math.min(q.x,bb.r)),by=Math.max(bb.t,Math.min(q.y,bb.b));if(segX(b,q.x,q.y,bx,by))s+=40}
+   for(const [q,lp] of LE){const bb=lp.b;const bx=Math.max(bb.l,Math.min(C[q].x,bb.r)),by=Math.max(bb.t,Math.min(C[q].y,bb.b));if(segX(b,C[q].x,C[q].y,bx,by))s+=40}
    if(!best||s<best.s)best={s,x,y,b}}
   if(!best||best.s>150)continue;
   placed.push(best.b);
@@ -1383,7 +1386,7 @@ function notMine(){if(!G||G.over)return;if(G.phase!=='play')return toast('รอ
 
 // ---------- render ----------
 let prevFace=[],prevHand={},prevMe=-1;
-function render(){
+function render(){try{Presence.poke()}catch(_){}
  renderMap();if(!G)return;
  const T0=TRAINS[G.players.length];const rv=revealed();
  $('players').className='n'+G.players.length;$('players').innerHTML=G.players.map((p,i)=>`<div class="pc ${i===G.cur&&!G.over&&G.phase==='play'?'cur':''} ${i===ME&&(MODE!=='local'||humans().length>1)?'me':''}" onclick="playerInfo(${i})"><span class="av" style="background:${p.col}">${p.ai?'🤖':'😊'}</span><div class="tx"><div class="n1">${esc(p.name)}${p.off?' ⚠️':''}</div><div class="n2">${p.score}<small>🚃${p.trains}</small></div></div><div class="bar2"><i style="width:${p.trains/T0*100}%;background:${p.col}"></i></div></div>`).join('');
@@ -1610,7 +1613,7 @@ function showSetup(){
  }
  const sv=(!G||G.over)?loadSave():null;
  const resumeCard=sv?`<div class="resume"><b>🕹️ มีเกมที่ค้างไว้</b><div class="small">${sv.mode==='guest'?`ห้องออนไลน์ ${sv.code} · ในชื่อ ${esc(sv.name||'')}`:sv.mode==='host'?`ห้องออนไลน์ของคุณ (${sv.code}) · ${sv.G.players.length} ผู้เล่น · ตาที่ ${sv.G.turn+1}`:`${sv.G.players.map(p=>esc(p.name)).join(', ')} · ตาที่ ${sv.G.turn+1}`} · บันทึกเมื่อ ${new Date(sv.t).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})}</div><div class="row2"><button class="btn gold" onclick="resumeGame()">▶ เล่นต่อ</button><button class="btn ghost" onclick="dropSave()">ทิ้งเกมนี้</button></div></div>`:'';
- showSheet(`<div class="hero"><h2>รถไฟสายสยาม</h2><p>สร้างเส้นทางรถไฟทั่วไทย<br>แข่งกันทำแต้มให้สูงสุด</p><div style="height:44px"></div>${HERO_TRAIN}</div>
+ showSheet(`<div class="hero"><div id="onlineChip" class="ochip">${Presence.chip()}</div><h2>รถไฟสายสยาม</h2><p>สร้างเส้นทางรถไฟทั่วไทย<br>แข่งกันทำแต้มให้สูงสุด</p><div style="height:44px"></div>${HERO_TRAIN}</div>
  ${resumeCard}
  <div class="tabs">${tabs.map(([k,ic,l])=>`<button class="${tab===k?'on':''}" onclick="tab='${k}';showSetup()"><span>${ic}</span>${l}</button>`).join('')}</div>
  ${body}
@@ -1757,11 +1760,47 @@ const Net={
 window.addEventListener('pagehide',()=>{if(MODE==='guest'&&Net.conn&&Net.ok)try{Net.conn.send({t:'bye'})}catch(_){}});
 function copyTxt(t){try{navigator.clipboard.writeText(t).then(()=>toast('คัดลอกแล้ว'),()=>toast(t))}catch(_){toast(t)}}
 
+// ---------- presence: how many people have the game open right now ----------
+// No server of our own: whichever device first claims HUB id counts everyone; if it leaves, another device takes over.
+const HUB='siamrail-v1-hub';
+const Presence={peer:null,conn:null,members:null,isHub:false,online:null,playing:null,last:0,tick:0,rt:0,started:false,
+ start(){if(this.started)return;this.started=true;Net.load().then(()=>this.join()).catch(()=>{})},
+ status(){return G&&!G.over?'play':'menu'},
+ async join(){this.reset();
+  try{const p=await Net.newPeer(HUB);this.hub(p)}
+  catch(e){if(e&&e.type==='unavailable-id'){try{this.peer=await Net.newPeer();this.connect()}catch(_){this.later()}}else this.later()}},
+ hub(p){this.peer=p;this.isHub=true;this.members=new Map();
+  p.on('connection',c=>{c.on('open',()=>{this.members.set(c,{st:'menu',t:Date.now()});this.hubTick()});
+   c.on('data',d=>{const m=this.members.get(c);if(m){m.t=Date.now();if(d&&d.st)m.st=d.st}});
+   const drop=()=>{if(this.members&&this.members.delete(c))this.hubTick()};c.on('close',drop);c.on('error',drop)});
+  p.on('disconnected',()=>{try{p.reconnect()}catch(_){}});p.on('error',()=>{});
+  this.tick=setInterval(()=>this.hubTick(),5000);this.hubTick()},
+ hubTick(){if(!this.members)return;const now=Date.now();
+  for(const [c,m] of this.members)if(now-m.t>30000){try{c.close()}catch(_){};this.members.delete(c)}
+  let on=1,pl=this.status()==='play'?1:0;for(const m of this.members.values()){on++;if(m.st==='play')pl++}
+  this.set(on,pl);for(const c of this.members.keys())try{c.send({t:'cnt',on,pl})}catch(_){}},
+ connect(){const p=this.peer;const c=p.connect(HUB,{reliable:true});this.conn=c;let open=false;
+  const to=setTimeout(()=>{if(!open)this.later(true)},10000);
+  p.on('error',e=>{if(!open&&e&&e.type==='peer-unavailable'){clearTimeout(to);this.later(true)}});
+  c.on('open',()=>{open=true;clearTimeout(to);this.last=Date.now();this.send();
+   this.tick=setInterval(()=>{this.send();if(Date.now()-this.last>25000)this.later(true)},8000)});
+  c.on('data',d=>{if(d&&d.t==='cnt'){this.last=Date.now();this.set(d.on,d.pl)}});
+  c.on('close',()=>this.later(true));c.on('error',()=>{})},
+ send(){try{if(this.conn&&this.conn.open)this.conn.send({st:this.status()})}catch(_){}},
+ poke(){const st=this.status();if(st===this.lastSt)return;this.lastSt=st;if(this.isHub)this.hubTick();else this.send()},
+ reset(){clearInterval(this.tick);this.tick=0;try{this.conn&&this.conn.close()}catch(_){};try{this.peer&&this.peer.destroy()}catch(_){}
+  this.peer=null;this.conn=null;this.isHub=false;this.members=null},
+ later(quick){this.reset();clearTimeout(this.rt);this.rt=setTimeout(()=>this.join(),quick?400+Math.random()*2600:20000+Math.random()*10000)},
+ set(on,pl){if(on===this.online&&pl===this.playing)return;this.online=on;this.playing=pl;const el=document.getElementById('onlineChip');if(el)el.innerHTML=this.chip()},
+ chip(){if(this.online==null)return '';return `<i></i>ออนไลน์ ${this.online} คน${this.playing?` · กำลังเล่น ${this.playing}`:''}`}};
+window.addEventListener('pagehide',()=>Presence.reset());
+
 window.addEventListener('resize',()=>{if(userZoom)setView();else fitZoom();renderSide()});
 firstMode=store.get('firstMode','random');hintPref=store.get('hints','basic');rcolPref=store.get('rcol',false);Sfx.on=store.get('sound',true);sndIcon();lvl=store.get('lvl','normal');
 fitZoom();render();
 if(/^#join-[A-Z0-9]{5}$/.test(location.hash))tab='online';
 showSetup();
+setTimeout(()=>Presence.start(),1200);
 </script>
 </body>
 </html>
