@@ -255,7 +255,7 @@ header{padding:calc(6px + env(safe-area-inset-top)) 8px 6px}
 .pc .bar2{position:absolute;left:6px;right:6px;bottom:2px;height:2px;border-radius:2px;background:#ffffff18;overflow:hidden}.pc .bar2 i{display:block;height:100%}
 .pc.me .n1{color:var(--gold2)}
 #players.n5 .pc{padding:4px 4px;gap:3px}#players.n5 .pc .n1{display:none}#players.n5 .pc .n2{font-size:12.5px}#players.n5 .pc .n2 small{display:block;margin:0;font-size:9px}#players.n5 .pc .av{width:20px;height:20px;font-size:11px}
-#side{display:none}
+#side{display:none}#sideExtra:empty{display:none}
 .prog{position:relative;height:14px;border-radius:7px;background:#efe6d4;margin-top:6px;overflow:hidden}
 .prog i{display:block;height:100%;border-radius:7px;background:linear-gradient(90deg,#f6b93b,#f6a823);transition:width .5s}
 .prog.done i{background:linear-gradient(90deg,#43a047,#2e7d32)}.prog.warn i{background:linear-gradient(90deg,#ef5350,#c62828)}.prog.blk i{background:#bbb}
@@ -288,7 +288,8 @@ header{padding:calc(6px + env(safe-area-inset-top)) 8px 6px}
 .menu button{border:2px solid var(--line);background:#fff;border-radius:13px;padding:12px 8px;font-weight:600;color:var(--navy);display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px}
 .menu button span{font-size:22px}
 @media (min-width:760px) and (min-aspect-ratio:1/1){
- body{display:grid;grid-template-columns:1fr 400px;grid-template-rows:auto 1fr;height:100dvh}
+ /* the map is tall and narrow: give it just the width it needs and the rest to the panel */
+ body{display:grid;grid-template-columns:1fr var(--pw);grid-template-rows:auto 1fr;height:100dvh;overflow:hidden;--pw:clamp(400px,calc(100vw - (100dvh - 60px)*.6 - 30px),820px)}
  header{grid-column:1 / 3}
  #mapBox{grid-row:2;grid-column:1}
  #mapWrap{inset:0}
@@ -298,6 +299,36 @@ header{padding:calc(6px + env(safe-area-inset-top)) 8px 6px}
  #market{flex-wrap:wrap}
  #side{display:block;margin-top:14px;border-top:1px solid var(--line);padding-top:10px}
  #bTickets{display:none}
+ /* fit the whole panel on screen: only the ticket list may scroll inside itself */
+ #panel{overflow:hidden;display:flex;flex-direction:column;padding-bottom:10px}
+ #side{flex:1;min-height:0;display:flex;flex-direction:column}
+ #sideBody{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 2px 4px}
+ #sideTabs{margin-bottom:8px}#sideTabs button{padding:6px 4px}
+ #side .btn.gold{padding:9px 12px;margin-bottom:8px!important;font-size:14px}
+ #side .chips{margin:0 0 4px}#side .chip{padding:6px 8px}#side .chip b{font-size:17px}#side .chip small{font-size:10.5px}
+ #side .tk{margin:7px 0}#side .tk .main{padding:7px 10px}#side .tk .rt{font-size:14px}#side .tk .stub{width:52px}#side .tk .stub b{font-size:18px}
+ #side .tk .lab{font-size:9px}#side .tk .state{margin-top:2px}#side .prog{margin-top:4px}
+ #side .sub{font-size:11px}
+ /* automatic compaction when many tickets would not fit */
+ #sideBody.tight .tk{margin:5px 0}#sideBody.tight .tk .lab{display:none}#sideBody.tight .tk .main{padding:6px 9px}
+ #sideBody.tight .need i{font-size:10.5px;padding:1px 6px}#sideBody.tight .prog{height:9px;margin-top:3px}#sideBody.tight .prog span{display:none}
+ #sideBody.tight .tk .stub{width:46px}#sideBody.tight .tk .stub b{font-size:16px}#sideBody.tight>.sub{display:none}
+ #sideBody.tighter .tk:not(.vw) .need{display:none}#sideBody.tighter .tk .rt{font-size:13px}#sideBody.tighter .tk .state{font-size:10px}
+}
+@media (min-width:1000px) and (min-aspect-ratio:1/1){
+ /* wide tablets: cards on the left, tickets on the right */
+ #panel{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.08fr);grid-template-rows:auto minmax(0,1fr);column-gap:14px}
+ #statusRow{grid-column:1 / 3}
+ #panelBody{grid-column:1;grid-row:2;align-content:start;overflow:hidden}
+ #sideExtra{margin-top:12px}#sideExtra .btn.gold{width:100%;padding:11px 12px;font-size:14.5px;margin-bottom:8px!important}#sideExtra .chips{margin:0}
+ #side{grid-column:2;grid-row:2;margin-top:0;border-top:0;padding-top:0;border-left:1px solid var(--line);padding-left:12px}
+ #market{display:grid!important;grid-template-columns:repeat(3,1fr);gap:8px}
+ #market .card{max-height:none;aspect-ratio:1.25}
+ .hand{display:grid!important;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}
+ .hc{height:46px}
+}
+@media (min-width:1000px) and (max-height:800px) and (min-aspect-ratio:1/1){
+ #market .card{aspect-ratio:1.45}.hc{height:40px}
 }
 /* v7 features */
 #feed{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;gap:5px;align-items:center;pointer-events:none;width:calc(100% - 120px)}
@@ -384,6 +415,7 @@ header{padding:calc(6px + env(safe-area-inset-top)) 8px 6px}
   <div id="panelBody">
     <div class="row" id="market"></div>
     <div class="row handrow"><div class="row hand" id="hand"></div><button id="bTickets" onclick="showMyTickets()" aria-label="ตั๋วของฉัน"><svg viewBox="0 0 24 24"><use href="#i-ticket"/></svg><b id="tkCount">0</b></button></div>
+    <div id="sideExtra"></div>
   </div>
   <div id="side"><div id="sideTabs"></div><div id="sideBody"></div></div>
 </div>
@@ -1509,17 +1541,17 @@ function flashCities(a,b,inSheet){if(inSheet)hideSheet();hl=[a,b];render();clear
 function ticketsHTML(inSheet){
  const p=G.players[ME];
  const stuck=myTurn()&&G.drawn===0&&!cardsLeft(false)&&!G.tdeck.length,canDraw=myTurn()&&G.drawn===0&&G.tdeck.length>0;
- let h=`<button class="btn gold" style="width:100%;margin-bottom:10px" ${canDraw||stuck?'':'disabled'} onclick="${inSheet?'hideSheet();':''}uTickets()"><svg viewBox="0 0 24 24"><use href="#i-plus"/></svg>${stuck?'ข้ามตา (ไม่มีอะไรให้ทำแล้ว)':'จั่วตั๋วใหม่ (ใช้ตานี้)'}</button>`;
- if(!p.tickets.length)return h+'<p class="sub">ยังไม่มีตั๋ว</p>';
+ let h=`<button class="btn gold" style="width:100%;margin-bottom:10px" ${canDraw||stuck?'':'disabled'} onclick="${inSheet?'hideSheet();':''}uTickets()"><svg viewBox="0 0 24 24"><use href="#i-plus"/></svg>${stuck?'ข้ามตา (ไม่มีอะไรให้ทำแล้ว)':'จั่วตั๋วใหม่ (ใช้ตานี้)'}</button>`;const SPL='<!--LIST-->';
+ if(!p.tickets.length)return h+SPL+'<p class="sub">ยังไม่มีตั๋ว</p>';
  const HL=hintLv();
- if(HL==='none'){
+ if(HL==='none'){h+=SPL;
   p.tickets.forEach(id=>{const t=TICKETS[id];h+=`<div class="tk${t.long?' long':''}${selTk===t.id?' vw':''}" onclick="viewTk(${t.id},${inSheet})">${tkHTML(t,{})}</div>`});
   return h+'<p class="sub" style="margin-top:6px">โหมดไม่มีตัวช่วย: วางแผนเส้นทางเองจากแผนที่ แตะตั๋วเพื่อดูตำแหน่งเมือง</p>';
  }
  const list=p.tickets.map(id=>TICKETS[id]).map(t=>{const d=connected(ME,t.a,t.b);return {t,d,pl:d?null:ticketPlan(ME,t.id)}})
   .sort((a,b)=>a.d-b.d||(!!(a.pl&&a.pl.blocked))-(!!(b.pl&&b.pl.blocked))||(b.pl&&!b.pl.blocked?b.pl.pct:0)-(a.pl&&!a.pl.blocked?a.pl.pct:0));
  const done=list.filter(x=>x.d).reduce((a,x)=>a+x.t.pts,0),todo=list.filter(x=>!x.d).reduce((a,x)=>a+x.t.pts,0);
- h+=`<div class="chips"><div class="chip"><b style="color:#2e7d32">+${done}</b><small>สำเร็จแล้ว</small></div><div class="chip"><b style="color:#b71c1c">−${todo}</b><small>ถ้ายังไม่สำเร็จ</small></div></div>`;
+ h+=`<div class="chips"><div class="chip"><b style="color:#2e7d32">+${done}</b><small>สำเร็จแล้ว</small></div><div class="chip"><b style="color:#b71c1c">−${todo}</b><small>ถ้ายังไม่สำเร็จ</small></div></div>`+SPL;
  list.forEach(({t,d,pl})=>{let st,pct=100,cls='done';
   if(d)st='<div class="state">✅ เชื่อมต่อสำเร็จ</div>';
   else if(pl.blocked){pct=0;cls='blk';st='<div class="state" style="color:#b71c1c">⛔ ถูกตัดขาด — ทำไม่สำเร็จแล้ว</div>'}
@@ -1546,8 +1578,12 @@ function renderSide(){
  if(!G||!wide()){return}
  const rv=revealed();
  $('sideTabs').innerHTML=`<button class="${sideTab==='tickets'?'on':''}" onclick="setSideTab('tickets')">🎫 ตั๋วของฉัน <b>${rv?G.players[ME].tickets.length:'–'}</b></button><button class="${sideTab==='log'?'on':''}" onclick="setSideTab('log')">📜 ความเคลื่อนไหว</button>`;
- $('sideBody').innerHTML=sideTab==='tickets'?(rv?ticketsHTML(false):'<p class="sub">🙈 ซ่อนตั๋วไว้จนกว่าจะส่งเครื่อง</p>')
+ const two=matchMedia('(min-width:1000px) and (min-aspect-ratio:1/1)').matches;let tk=rv?ticketsHTML(false):'<!--LIST--><p class="sub">🙈 ซ่อนตั๋วไว้จนกว่าจะส่งเครื่อง</p>';
+ const [tkTop,tkList]=tk.split('<!--LIST-->');$('sideExtra').innerHTML=two?tkTop:'';if(!two)tk=tkTop+tkList;else tk=tkList;
+ const sb=$('sideBody');sb.classList.remove('tight','tighter');
+ sb.innerHTML=sideTab==='tickets'?tk
   :G.log.slice(-60).reverse().map(l=>`<div class="logl"><span class="d" style="background:${G.players[l.p]?G.players[l.p].col:'#999'}"></span><span>${l.m}</span></div>`).join('');
+ if(sideTab==='tickets'){for(const c of ['tight','tighter']){if(sb.scrollHeight<=sb.clientHeight+1)break;sb.classList.add(c)}}
 }
 function showLog(){if(!G)return;showSheet('<h2>บันทึกเกม</h2>'+G.log.slice().reverse().map(l=>`<div class="logl"><span class="d" style="background:${G.players[l.p]?G.players[l.p].col:'#999'}"></span><span>${l.m}</span></div>`).join('')+'<button class="btn ghost" style="width:100%;margin-top:12px" onclick="hideSheet()">ปิด</button>')}
 function showRules(){showSheet('<h2>วิธีเล่น</h2>'+RULES+'<button class="btn ghost" style="width:100%" onclick="hideSheet()">เข้าใจแล้ว</button>')}
