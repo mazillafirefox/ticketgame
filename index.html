@@ -289,15 +289,15 @@ header{padding:calc(6px + env(safe-area-inset-top)) 8px 6px}
 .menu button span{font-size:22px}
 @media (min-width:760px) and (min-aspect-ratio:1/1){
  /* the map is tall and narrow: give it just the width it needs and the rest to the panel */
- body{display:grid;grid-template-columns:1fr var(--pw);grid-template-rows:auto 1fr;height:100dvh;overflow:hidden;--pw:clamp(400px,calc(100vw - (100dvh - 60px)*.6 - 30px),820px)}
+ body{display:grid;grid-template-columns:1fr 400px;grid-template-rows:auto 1fr;height:100dvh;overflow:hidden}
  header{grid-column:1 / 3}
  #mapBox{grid-row:2;grid-column:1}
  #mapWrap{inset:0}
  #panel{grid-row:2;grid-column:2;margin:0;border-radius:0;overflow:auto;box-shadow:-4px 0 18px #0b223035;padding-top:14px}
  #grab{display:none}#panel.collapsed #panelBody{display:flex}
- .card{max-height:96px}.hc{height:48px}
+ .card{max-height:76px}.hc{height:38px}
  #market{flex-wrap:wrap}
- #side{display:block;margin-top:14px;border-top:1px solid var(--line);padding-top:10px}
+ #side{display:block;margin-top:10px;border-top:1px solid var(--line);padding-top:8px}
  #bTickets{display:none}
  /* fit the whole panel on screen: only the ticket list may scroll inside itself */
  #panel{overflow:hidden;display:flex;flex-direction:column;padding-bottom:10px}
@@ -305,30 +305,17 @@ header{padding:calc(6px + env(safe-area-inset-top)) 8px 6px}
  #sideBody{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 2px 4px}
  #sideTabs{margin-bottom:8px}#sideTabs button{padding:6px 4px}
  #side .btn.gold{padding:9px 12px;margin-bottom:8px!important;font-size:14px}
- #side .chips{margin:0 0 4px}#side .chip{padding:6px 8px}#side .chip b{font-size:17px}#side .chip small{font-size:10.5px}
- #side .tk{margin:7px 0}#side .tk .main{padding:7px 10px}#side .tk .rt{font-size:14px}#side .tk .stub{width:52px}#side .tk .stub b{font-size:18px}
- #side .tk .lab{font-size:9px}#side .tk .state{margin-top:2px}#side .prog{margin-top:4px}
+ #side .chips{margin:0 0 4px}#side .chip{padding:4px 8px;display:flex;align-items:center;justify-content:center;gap:6px}#side .chip b{font-size:15px}#side .chip small{font-size:10px}
+ #side .tk{margin:5px 0;border-radius:10px}#side .tk .main{padding:5px 9px}#side .tk .rt{font-size:13px;gap:5px}#side .tk .rt svg{width:13px}#side .tk .stub{width:44px}#side .tk .stub b{font-size:15px}#side .tk .stub small{font-size:8px}
+ #side .tk .lab{display:none}#side .tk .state{margin-top:1px;font-size:10px}#side .prog{margin-top:3px;height:8px}#side .prog span{display:none}#side .need{margin-top:3px;gap:3px}#side .need i{font-size:9.5px;padding:0 5px}
+ #side .chips{gap:6px}#side .btn.gold{padding:8px 10px;font-size:13.5px}
  #side .sub{font-size:11px}
  /* automatic compaction when many tickets would not fit */
- #sideBody.tight .tk{margin:5px 0}#sideBody.tight .tk .lab{display:none}#sideBody.tight .tk .main{padding:6px 9px}
+ #sideBody.tight .tk{margin:4px 0}#sideBody.tight .tk .main{padding:4px 8px}
  #sideBody.tight .need i{font-size:10.5px;padding:1px 6px}#sideBody.tight .prog{height:9px;margin-top:3px}#sideBody.tight .prog span{display:none}
  #sideBody.tight .tk .stub{width:46px}#sideBody.tight .tk .stub b{font-size:16px}#sideBody.tight>.sub{display:none}
  #sideBody.tighter .tk:not(.vw) .need{display:none}#sideBody.tighter .tk .rt{font-size:13px}#sideBody.tighter .tk .state{font-size:10px}
-}
-@media (min-width:1000px) and (min-aspect-ratio:1/1){
- /* wide tablets: cards on the left, tickets on the right */
- #panel{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.08fr);grid-template-rows:auto minmax(0,1fr);column-gap:14px}
- #statusRow{grid-column:1 / 3}
- #panelBody{grid-column:1;grid-row:2;align-content:start;overflow:hidden}
- #sideExtra{margin-top:12px}#sideExtra .btn.gold{width:100%;padding:11px 12px;font-size:14.5px;margin-bottom:8px!important}#sideExtra .chips{margin:0}
- #side{grid-column:2;grid-row:2;margin-top:0;border-top:0;padding-top:0;border-left:1px solid var(--line);padding-left:12px}
- #market{display:grid!important;grid-template-columns:repeat(3,1fr);gap:8px}
- #market .card{max-height:none;aspect-ratio:1.25}
- .hand{display:grid!important;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}
- .hc{height:46px}
-}
-@media (min-width:1000px) and (max-height:800px) and (min-aspect-ratio:1/1){
- #market .card{aspect-ratio:1.45}.hc{height:40px}
+ #sideBody.tightest .tk:not(.vw) .state{display:none}#sideBody.tightest .tk{margin:3px 0}#sideBody.tightest .tk .stub b{font-size:14px}#sideBody.tightest .tk .stub small{display:none}
 }
 /* v7 features */
 #feed{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;gap:5px;align-items:center;pointer-events:none;width:calc(100% - 120px)}
@@ -1578,12 +1565,12 @@ function renderSide(){
  if(!G||!wide()){return}
  const rv=revealed();
  $('sideTabs').innerHTML=`<button class="${sideTab==='tickets'?'on':''}" onclick="setSideTab('tickets')">🎫 ตั๋วของฉัน <b>${rv?G.players[ME].tickets.length:'–'}</b></button><button class="${sideTab==='log'?'on':''}" onclick="setSideTab('log')">📜 ความเคลื่อนไหว</button>`;
- const two=matchMedia('(min-width:1000px) and (min-aspect-ratio:1/1)').matches;let tk=rv?ticketsHTML(false):'<!--LIST--><p class="sub">🙈 ซ่อนตั๋วไว้จนกว่าจะส่งเครื่อง</p>';
+ const two=false;let tk=rv?ticketsHTML(false):'<!--LIST--><p class="sub">🙈 ซ่อนตั๋วไว้จนกว่าจะส่งเครื่อง</p>';
  const [tkTop,tkList]=tk.split('<!--LIST-->');$('sideExtra').innerHTML=two?tkTop:'';if(!two)tk=tkTop+tkList;else tk=tkList;
- const sb=$('sideBody');sb.classList.remove('tight','tighter');
+ const sb=$('sideBody');sb.classList.remove('tight','tighter','tightest');
  sb.innerHTML=sideTab==='tickets'?tk
   :G.log.slice(-60).reverse().map(l=>`<div class="logl"><span class="d" style="background:${G.players[l.p]?G.players[l.p].col:'#999'}"></span><span>${l.m}</span></div>`).join('');
- if(sideTab==='tickets'){for(const c of ['tight','tighter']){if(sb.scrollHeight<=sb.clientHeight+1)break;sb.classList.add(c)}}
+ if(sideTab==='tickets'){for(const c of ['tight','tighter','tightest']){if(sb.scrollHeight<=sb.clientHeight+1)break;sb.classList.add(c)}}
 }
 function showLog(){if(!G)return;showSheet('<h2>บันทึกเกม</h2>'+G.log.slice().reverse().map(l=>`<div class="logl"><span class="d" style="background:${G.players[l.p]?G.players[l.p].col:'#999'}"></span><span>${l.m}</span></div>`).join('')+'<button class="btn ghost" style="width:100%;margin-top:12px" onclick="hideSheet()">ปิด</button>')}
 function showRules(){showSheet('<h2>วิธีเล่น</h2>'+RULES+'<button class="btn ghost" style="width:100%" onclick="hideSheet()">เข้าใจแล้ว</button>')}
