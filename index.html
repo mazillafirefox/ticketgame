@@ -302,7 +302,8 @@ header{padding:calc(6px + env(safe-area-inset-top)) 8px 6px}
  /* fit the whole panel on screen: only the ticket list may scroll inside itself */
  #panel{overflow:hidden;display:flex;flex-direction:column;padding-bottom:10px}
  #side{flex:1;min-height:0;display:flex;flex-direction:column}
- #sideBody{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 2px 4px}
+ #sideBody{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 2px 4px;contain:strict;-webkit-overflow-scrolling:touch}
+ #panel{contain:layout paint}
  #sideTabs{margin-bottom:8px}#sideTabs button{padding:6px 4px}
  #side .btn.gold{padding:9px 12px;margin-bottom:8px!important;font-size:14px}
  #side .chips{margin:0 0 4px}#side .chip{padding:4px 8px;display:flex;align-items:center;justify-content:center;gap:6px}#side .chip b{font-size:15px}#side .chip small{font-size:10px}
@@ -313,7 +314,7 @@ header{padding:calc(6px + env(safe-area-inset-top)) 8px 6px}
  /* automatic compaction when many tickets would not fit */
  #sideBody.tight .tk{margin:4px 0}#sideBody.tight .tk .main{padding:4px 8px}
  #sideBody.tight .need i{font-size:10.5px;padding:1px 6px}#sideBody.tight .prog{height:9px;margin-top:3px}#sideBody.tight .prog span{display:none}
- #sideBody.tight .tk .stub{width:46px}#sideBody.tight .tk .stub b{font-size:16px}#sideBody.tight>.sub{display:none}
+ #sideBody.tight .tk .stub{width:46px}#sideBody.tight .tk .stub b{font-size:16px}#sideBody.tight .sbp>.sub{display:none}
  #sideBody.tighter .tk:not(.vw) .need{display:none}#sideBody.tighter .tk .rt{font-size:13px}#sideBody.tighter .tk .state{font-size:10px}
  #sideBody.tightest .tk:not(.vw) .state{display:none}#sideBody.tightest .tk{margin:3px 0}#sideBody.tightest .tk .stub b{font-size:14px}#sideBody.tightest .tk .stub small{display:none}
 }
@@ -1362,7 +1363,12 @@ function afterRender(){
  wake();
 }
 // ---------- ticket route hints ----------
-function ticketPlan(pi,id){const p=G.players[pi],t=TICKETS[id];
+// plans only change when a route is claimed or the hand/trains change, so cache them
+const planMemo={key:'',m:new Map()};
+function ticketPlan(pi,id){const p=G.players[pi];const key=G.owner.join(',')+'|'+JSON.stringify(p.hand)+'|'+p.trains+'|'+G.players.length;
+ if(key!==planMemo.key){planMemo.key=key;planMemo.m.clear()}const mk=pi+':'+id;
+ if(!planMemo.m.has(mk))planMemo.m.set(mk,ticketPlan0(pi,id));return planMemo.m.get(mk)}
+function ticketPlan0(pi,id){const p=G.players[pi],t=TICKETS[id];
  const r=dijkstra(t.a,t.b,x=>{const o=G.owner[x.id];return o===pi?0:usable(pi,x)?x.len:Infinity});
  if(r.cost===Infinity)return {blocked:true};
  const rids=r.rids.filter(x=>G.owner[x]===-1);const need={};
@@ -1532,8 +1538,8 @@ function ticketsHTML(inSheet){
  if(!p.tickets.length)return h+SPL+'<p class="sub">ยังไม่มีตั๋ว</p>';
  const HL=hintLv();
  if(HL==='none'){h+=SPL;
-  p.tickets.forEach(id=>{const t=TICKETS[id];h+=`<div class="tk${t.long?' long':''}${selTk===t.id?' vw':''}" onclick="viewTk(${t.id},${inSheet})">${tkHTML(t,{})}</div>`});
-  return h+'<p class="sub" style="margin-top:6px">โหมดไม่มีตัวช่วย: วางแผนเส้นทางเองจากแผนที่ แตะตั๋วเพื่อดูตำแหน่งเมือง</p>';
+  p.tickets.forEach(id=>{const t=TICKETS[id];h+=`<!--T--><div class="tk${t.long?' long':''}${selTk===t.id?' vw':''}" onclick="viewTk(${t.id},${inSheet})">${tkHTML(t,{})}</div>`});
+  return h+'<!--END--><p class="sub" style="margin-top:6px">โหมดไม่มีตัวช่วย: วางแผนเส้นทางเองจากแผนที่ แตะตั๋วเพื่อดูตำแหน่งเมือง</p>';
  }
  const list=p.tickets.map(id=>TICKETS[id]).map(t=>{const d=connected(ME,t.a,t.b);return {t,d,pl:d?null:ticketPlan(ME,t.id)}})
   .sort((a,b)=>a.d-b.d||(!!(a.pl&&a.pl.blocked))-(!!(b.pl&&b.pl.blocked))||(b.pl&&!b.pl.blocked?b.pl.pct:0)-(a.pl&&!a.pl.blocked?a.pl.pct:0));
@@ -1549,8 +1555,8 @@ function ticketsHTML(inSheet){
    st=`<div class="state" style="color:${pl.ok?'#8a6d1a':'#b71c1c'}">🛤️ สร้างแล้ว ${pl.built} · เหลือ ${pl.cost} ตู้${pl.ok?'':' (รถไฟไม่พอ!)'}</div><div class="need">${chips}</div>`}
   st+=`<div class="prog ${cls}"><i style="width:${pct}%"></i><span>${pct}%</span></div>`;
   const tap=d||HL!=='full'?`viewTk(${t.id},${inSheet})`:`selTk=${t.id};showPath(${t.id})`;
-  h+=`<div class="tk ${d?'done':''}${t.long?' long':''}${hlPath&&hlPath.t===t.id?' sel vw':selTk===t.id&&!hlPath?' vw':''}" onclick="${tap}">${tkHTML(t,{state:st})}</div>`});
- h+=HL==='basic'?'<p class="sub" style="margin-top:6px">โหมดตัวช่วยพื้นฐาน: แตะตั๋วเพื่อดูตำแหน่งเมือง — เส้นทางวางแผนเอง</p>':'<p class="sub" style="margin-top:6px">แตะตั๋วเพื่อดูเส้นทางแนะนำบนแผนที่ แตะซ้ำเพื่อยกเลิก · กรอบเขียวรอบสี = การ์ดในมือ (รวมหัวรถจักร) พอแล้ว</p>';
+  h+=`<!--T--><div class="tk ${d?'done':''}${t.long?' long':''}${hlPath&&hlPath.t===t.id?' sel vw':selTk===t.id&&!hlPath?' vw':''}" onclick="${tap}">${tkHTML(t,{state:st})}</div>`});
+ h+='<!--END-->';h+=HL==='basic'?'<p class="sub" style="margin-top:6px">โหมดตัวช่วยพื้นฐาน: แตะตั๋วเพื่อดูตำแหน่งเมือง — เส้นทางวางแผนเอง</p>':'<p class="sub" style="margin-top:6px">แตะตั๋วเพื่อดูเส้นทางแนะนำบนแผนที่ แตะซ้ำเพื่อยกเลิก · กรอบเขียวรอบสี = การ์ดในมือ (รวมหัวรถจักร) พอแล้ว</p>';
  return h;
 }
 function showMyTickets(){
@@ -1561,16 +1567,30 @@ function showMyTickets(){
 let sheetKind='',sideTab='tickets';
 function setSideTab(t){sideTab=t;renderSide()}
 function wide(){return matchMedia('(min-width:760px) and (min-aspect-ratio:1/1)').matches}
+let sideCache={tabs:'',mode:'',parts:[],lvl:0,n:0};
 function renderSide(){
  if(!G||!wide()){return}
  const rv=revealed();
- $('sideTabs').innerHTML=`<button class="${sideTab==='tickets'?'on':''}" onclick="setSideTab('tickets')">🎫 ตั๋วของฉัน <b>${rv?G.players[ME].tickets.length:'–'}</b></button><button class="${sideTab==='log'?'on':''}" onclick="setSideTab('log')">📜 ความเคลื่อนไหว</button>`;
- const two=false;let tk=rv?ticketsHTML(false):'<!--LIST--><p class="sub">🙈 ซ่อนตั๋วไว้จนกว่าจะส่งเครื่อง</p>';
- const [tkTop,tkList]=tk.split('<!--LIST-->');$('sideExtra').innerHTML=two?tkTop:'';if(!two)tk=tkTop+tkList;else tk=tkList;
- const sb=$('sideBody');sb.classList.remove('tight','tighter','tightest');
- sb.innerHTML=sideTab==='tickets'?tk
-  :G.log.slice(-60).reverse().map(l=>`<div class="logl"><span class="d" style="background:${G.players[l.p]?G.players[l.p].col:'#999'}"></span><span>${l.m}</span></div>`).join('');
- if(sideTab==='tickets'){for(const c of ['tight','tighter','tightest']){if(sb.scrollHeight<=sb.clientHeight+1)break;sb.classList.add(c)}}
+ const tabs=`<button class="${sideTab==='tickets'?'on':''}" onclick="setSideTab('tickets')">🎫 ตั๋วของฉัน <b>${rv?G.players[ME].tickets.length:'–'}</b></button><button class="${sideTab==='log'?'on':''}" onclick="setSideTab('log')">📜 ความเคลื่อนไหว</button>`;
+ if(tabs!==sideCache.tabs){$('sideTabs').innerHTML=tabs;sideCache.tabs=tabs}
+ // split into blocks (header, one per ticket, footer) and touch only the blocks that changed
+ let parts;
+ if(sideTab==='tickets'&&rv){const h=ticketsHTML(false).replace('<!--LIST-->','');const [main,foot='']=h.split('<!--END-->');parts=main.split('<!--T-->');parts.push(foot)}
+ else if(sideTab==='tickets')parts=['<p class="sub">🙈 ซ่อนตั๋วไว้จนกว่าจะส่งเครื่อง</p>'];
+ else parts=[G.log.slice(-60).reverse().map(l=>`<div class="logl"><span class="d" style="background:${G.players[l.p]?G.players[l.p].col:'#999'}"></span><span>${l.m}</span></div>`).join('')];
+ const sb=$('sideBody'),mode=sideTab+(rv?1:0),old=sideCache.parts;
+ if(mode===sideCache.mode&&parts.length===old.length&&parts.every((x,i)=>x===old[i]))return;
+ const top=sb.scrollTop;
+ if(mode!==sideCache.mode||parts.length!==old.length||sb.children.length!==parts.length){sb.innerHTML=parts.map(x=>`<div class="sbp">${x}</div>`).join('')}
+ else parts.forEach((x,i)=>{if(x!==old[i])sb.children[i].innerHTML=x});
+ const n=rv?G.players[ME].tickets.length:0,grew=mode!==sideCache.mode||n!==sideCache.n;
+ sideCache.parts=parts;sideCache.mode=mode;
+ const L=['tight','tighter','tightest'];
+ if(sideTab!=='tickets'){sb.classList.remove(...L);sideCache.n=n;return}
+ // keep the compaction level steady; re-check only when the ticket count changed or it now overflows
+ let lvl=grew?(n<sideCache.n?0:sideCache.lvl):sideCache.lvl;const set=k=>{L.forEach((c,i)=>sb.classList.toggle(c,i<k))};set(lvl);
+ while(lvl<3&&sb.scrollHeight>sb.clientHeight+1)set(++lvl);
+ sideCache.lvl=lvl;sideCache.n=n;sb.scrollTop=top;
 }
 function showLog(){if(!G)return;showSheet('<h2>บันทึกเกม</h2>'+G.log.slice().reverse().map(l=>`<div class="logl"><span class="d" style="background:${G.players[l.p]?G.players[l.p].col:'#999'}"></span><span>${l.m}</span></div>`).join('')+'<button class="btn ghost" style="width:100%;margin-top:12px" onclick="hideSheet()">ปิด</button>')}
 function showRules(){showSheet('<h2>วิธีเล่น</h2>'+RULES+'<button class="btn ghost" style="width:100%" onclick="hideSheet()">เข้าใจแล้ว</button>')}
